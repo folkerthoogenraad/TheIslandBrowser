@@ -8,4 +8,40 @@ export class Sprite{
    sourceY: number = 0;
    sourceWidth: number = 0;
    sourceHeight: number = 0;
+   
+   constructor(image: CanvasImageSource){
+      this.image = image;
+
+      this.sourceWidth = image.width as number;
+      this.sourceHeight = image.height as number;
+   }
+
+   get width() { return this.sourceWidth; }
+   get height() { return this.sourceHeight; }
+
+   center(){
+      this.offsetX = this.width;
+      this.offsetY = this.height;
+
+      return this;
+   }
+}
+
+export class SpriteSheet{
+   image: CanvasImageSource;
+
+   constructor(image: CanvasImageSource){
+      this.image = image;
+   }
+
+   getSprite(x: number, y: number, w: number, h: number){
+      let sprite = new Sprite(this.image);
+
+      sprite.sourceX = x;
+      sprite.sourceY = y;
+      sprite.sourceWidth = w;
+      sprite.sourceHeight = h;
+
+      return sprite;
+   }
 }

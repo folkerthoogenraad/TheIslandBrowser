@@ -1,0 +1,14 @@
+body{
+   overflow:hidden;
+
+   width:100vw;
+   height:100vh;
+}
+
+#canvas{
+   image-rendering: pixelated;
+}
+
+.resource{
+   display: none;
+}

@@ -10,6 +10,9 @@ export class Graphics{
    constructor(canvas: HTMLCanvasElement){
       this.canvas = canvas;
       this.context = canvas.getContext("2d");
+
+      this.context.imageSmoothingEnabled = false;
+      this.context.imageSmoothingQuality = "low";
    }
 
    reset(){
@@ -25,7 +28,9 @@ export class Graphics{
    }
 
    drawSprite(sprite: Sprite, x: number, y: number){
-      this.context.drawImage(sprite.image, x, y);
+      this.context.drawImage(sprite.image, 
+         sprite.sourceX, sprite.sourceY, sprite.sourceWidth, sprite.sourceHeight,
+         x, y, sprite.width, sprite.height);
    }
 
    drawRectangle(x: number, y: number, w: number, h: number, fill: boolean){
@@ -42,10 +47,10 @@ export class Graphics{
    setCamera(camera: Camera){
       this.context.resetTransform();
 
-      this.context.scale(camera.width, camera.height);
-      this.context.scale(1 / this.canvas.width, 1 / this.canvas.height);
+      this.context.scale(1 / camera.width, 1 / camera.height);
+      this.context.scale(this.canvas.width, this.canvas.height);
 
-      // this.context.translate(camera.center.x - camera.width / 2, camera.center.y - camera.height / 2);
+      this.context.translate(-(camera.center.x - camera.width / 2), -(camera.center.y - camera.height / 2));
    }
 
    setColor(color: string){
