@@ -1,6 +1,7 @@
 import { Graphics } from "graphics/Graphics";
 import { Scene } from "scene/Scene";
 import { now } from "util/Time";
+import { Input } from "./Input";
 
 export class Game{   
    currentTime: number = 0;
@@ -10,9 +11,14 @@ export class Game{
 
    scene?: Scene;
    graphics: Graphics;
+   input: Input;
 
    constructor(canvas: HTMLCanvasElement){
       this.graphics = new Graphics(canvas);
+      this.input = new Input();
+
+      window.addEventListener("resize", () => this.graphics.updateSize());
+      this.graphics.updateSize();
    }
 
    run(){
@@ -33,6 +39,8 @@ export class Game{
       let n = now();
       let delta = n - this.currentTime;
       this.currentTime = n;
+
+      this.input.poll();
       
       this.scene?.update(delta);
       this.scene?.draw(this.graphics);

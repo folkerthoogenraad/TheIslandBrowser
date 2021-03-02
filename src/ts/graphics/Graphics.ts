@@ -47,10 +47,13 @@ export class Graphics{
    setCamera(camera: Camera){
       this.context.resetTransform();
 
-      this.context.scale(1 / camera.width, 1 / camera.height);
+      let cameraHeight = camera.height;
+      let cameraWidth = this.canvas.width / this.canvas.height * cameraHeight;
+
+      this.context.scale(1 / cameraWidth, 1 / cameraHeight);
       this.context.scale(this.canvas.width, this.canvas.height);
 
-      this.context.translate(-(camera.center.x - camera.width / 2), -(camera.center.y - camera.height / 2));
+      this.context.translate(-(camera.center.x - cameraWidth / 2), -(camera.center.y - cameraHeight / 2));
    }
 
    setColor(color: string){
@@ -58,5 +61,12 @@ export class Graphics{
    }
    getColor(){
       return this.color;
+   }
+
+   updateSize(){
+      this.canvas.width = this.canvas.offsetWidth;
+      this.canvas.height = this.canvas.offsetHeight;
+      this.context.imageSmoothingEnabled = false;
+      this.context.imageSmoothingQuality = "low";
    }
 }
