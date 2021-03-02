@@ -1,10 +1,10 @@
-# Webpack SCSS Template
-This is a standard (empty) template for using webpack (with live reload) with babel-loader and SASS loader.
+# The Island
+The island is a browser game. Cool amirite?
 
 ## Installing
 ```
-git clone https://github.com/folkerthoogenraad/WebpackSCSSTemplate.git [YourProjectName]
-cd [YourProjectName]
+git clone https://github.com/folkerthoogenraad/TheIslandBrowser.git
+cd TheIslandBrowser
 npm install
 ```
 
