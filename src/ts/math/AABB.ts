@@ -1,11 +1,12 @@
 import { Vector2 } from "./Vector2";
 
 export class AABB{
-   position: Vector2 = new Vector2();
-   size: Vector2 = new Vector2();
+   position: Vector2;
+   size: Vector2;
 
-   constructor(){
-
+   constructor(position: Vector2 = new Vector2(), size: Vector2 = new Vector2()) { 
+      this.position = position;
+      this.size = size;
    }
 
    get left() { return this.position.x; }
@@ -15,6 +16,18 @@ export class AABB{
    get bottom() {return this.position.y + this.size.y; }
 
    overlaps(other: AABB){
-      // TODO create this, make sure overlaps only happen if they _overlap_. So, if the right and the left are ===, they don't overlap.
+      return this.overlapsX(other) && this.overlapsY(other);
+   }
+   overlapsX(other: AABB){
+      if(this.left >= other.right) return false;
+      if(this.right <= other.left) return false;
+
+      return true;
+   }
+   overlapsY(other: AABB){
+      if(this.top >= other.bottom) return false;
+      if(this.bottom <= other.top) return false;
+      
+      return true;
    }
 }

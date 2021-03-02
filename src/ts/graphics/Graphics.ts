@@ -4,15 +4,13 @@ import { Sprite } from "./Sprite";
 export class Graphics{
    canvas: HTMLCanvasElement;
    context: CanvasRenderingContext2D;
-
-   color: string;
+   color: string = "white";
 
    constructor(canvas: HTMLCanvasElement){
       this.canvas = canvas;
-      this.context = canvas.getContext("2d");
+      this.context = canvas.getContext("2d")!;
 
-      this.context.imageSmoothingEnabled = false;
-      this.context.imageSmoothingQuality = "low";
+      this.updateSize();
    }
 
    reset(){

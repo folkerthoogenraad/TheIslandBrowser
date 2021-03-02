@@ -2,6 +2,7 @@ import { Graphics } from "graphics/Graphics";
 import { Scene } from "scene/Scene";
 import { now } from "util/Time";
 import { Input } from "./Input";
+import { Physics } from "./Physics";
 
 export class Game{   
    currentTime: number = 0;
@@ -12,10 +13,12 @@ export class Game{
    scene?: Scene;
    graphics: Graphics;
    input: Input;
+   physics: Physics;
 
    constructor(canvas: HTMLCanvasElement){
       this.graphics = new Graphics(canvas);
       this.input = new Input();
+      this.physics = new Physics();
 
       window.addEventListener("resize", () => this.graphics.updateSize());
       this.graphics.updateSize();
@@ -24,6 +27,8 @@ export class Game{
    run(){
       if(this.running) return;
       this.running = true;
+
+      this.scene?.init(this);
 
       this._requestAnimationFrame();
    }
@@ -43,7 +48,13 @@ export class Game{
       this.input.poll();
       
       this.scene?.update(delta);
+      this.physics.update(delta);
+
+      this.graphics.reset();
+      this.graphics.clearScreen();
+
       this.scene?.draw(this.graphics);
+      this.physics.drawDebug(this.graphics);
    }
 
    _cancelAnimationFrame(){
