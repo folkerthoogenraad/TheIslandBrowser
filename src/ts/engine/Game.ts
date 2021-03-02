@@ -45,6 +45,8 @@ export class Game{
       let delta = n - this.currentTime;
       this.currentTime = n;
 
+      if(delta > 0.1){ delta = 0.1; }
+
       this.input.poll();
       
       this.scene?.update(delta);

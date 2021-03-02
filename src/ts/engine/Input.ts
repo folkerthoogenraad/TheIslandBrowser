@@ -70,6 +70,11 @@ export class GamepadInput{
       return !this.buttonState[buttonIndex] && this.previousButtonState[buttonIndex];
    }
 
+   get leftAxisX() { return this.axisState[GamepadInput.AXIS_LEFT_X];}
+   get leftAxisY() { return this.axisState[GamepadInput.AXIS_LEFT_Y];}
+   get rightAxisX() { return this.axisState[GamepadInput.AXIS_RIGHT_X];}
+   get rightAxisY() { return this.axisState[GamepadInput.AXIS_RIGHT_Y];}
+
    getNavigatorGamepad(){
       const pads = navigator.getGamepads();
 

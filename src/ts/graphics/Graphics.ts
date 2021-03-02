@@ -1,3 +1,4 @@
+import { AABB } from "math/AABB";
 import { Camera } from "./Camera";
 import { Sprite } from "./Sprite";
 
@@ -28,7 +29,7 @@ export class Graphics{
    drawSprite(sprite: Sprite, x: number, y: number){
       this.context.drawImage(sprite.image, 
          sprite.sourceX, sprite.sourceY, sprite.sourceWidth, sprite.sourceHeight,
-         x, y, sprite.width, sprite.height);
+         x - sprite.offsetX, y - sprite.offsetY, sprite.width, sprite.height);
    }
 
    drawRectangle(x: number, y: number, w: number, h: number, fill: boolean){
@@ -40,6 +41,10 @@ export class Graphics{
          this.context.strokeStyle = this.color;
          this.context.rect(x, y, w, h);
       }
+   }
+
+   drawAABB(aabb: AABB, fill: boolean){
+      this.drawRectangle(aabb.left, aabb.top, aabb.width, aabb.height, fill);
    }
 
    setCamera(camera: Camera){

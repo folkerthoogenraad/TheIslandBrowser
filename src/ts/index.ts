@@ -14,7 +14,6 @@ let sheet = new SpriteSheet(document.getElementById("resource_player") as HTMLIm
 
 class Player extends GameObject{
    sprite: Sprite;
-   angle: number = 0;
 
    transform: Transform;
    body: Rigidbody;
@@ -23,29 +22,41 @@ class Player extends GameObject{
       super();
 
       this.sprite = sheet.getSprite(0, 0 , 16, 16);
+      this.sprite.center();
 
       this.transform = this.addComponent(new Transform());
       this.body = this.addComponent(new Rigidbody());
+
+      this.body.aabb.offset.x = 8;
+      this.body.aabb.offset.y = 8;
+      this.body.aabb.size.x = 16;
+      this.body.aabb.size.y = 16;
    }
 
    update(delta: number){
       super.update(delta);
 
-      this.angle += delta;
-
       this.game.input.gamepads.forEach(pad => {
-         if(pad.isButtonPressed(GamepadInput.BUTTON_B)){
-            this.angle += 1;
+         if(pad.isButtonPressed(GamepadInput.BUTTON_A)){
+            this.body.velocity.y = -128;
          }
+         this.body.velocity.x += pad.leftAxisX * 512 * delta;
       });
-      
+
+      if(this.body.collidedX){ 
+         console.log("collided on x axis");
+      }
+      if(this.body.collidedY){ 
+         console.log("collided on y axis");
+      }
+
+      this.body.velocity.y += delta * 200;
    }
 
    draw(graphics: Graphics){
       super.draw(graphics);
 
-      const dist = 100;
-      graphics.drawSprite(this.sprite, Math.cos(this.angle) * dist, Math.sin(this.angle) * dist);
+      graphics.drawSprite(this.sprite, this.transform.position.x, this.transform.position.y);
    }
 
 }
@@ -55,13 +66,17 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
    let game = new Game(canvas);
 
-   game.physics.addStaticCollider(new AABB(
-      new Vector2(-64, 32),
-      new Vector2(128, 32)
-   ));
+   game.physics.addStaticCollider(AABB.Create(-64, 64, 128, 16));
+   game.physics.addStaticCollider(AABB.Create(-64, -64-16, 128, 16));
+
+   game.physics.addStaticCollider(AABB.Create(-64, -64, 16, 128));
+   game.physics.addStaticCollider(AABB.Create(64, -64, 16, 128));
    
    let scene = new Scene();
    let player = new Player();
+
+   player.body.velocity.y = -256;
+   player.body.velocity.x = 128 * (Math.random() * 2 - 1);
 
    scene.addGameObject(player);
 

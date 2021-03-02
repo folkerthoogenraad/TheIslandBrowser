@@ -31,6 +31,18 @@ export class Vector2{
 
       return this;
    }
+   set(other: Vector2){
+      this.x = other.x;
+      this.y = other.y;
+
+      return this;
+   }
+   setZero(){
+      this.x = 0;
+      this.y = 0;
+
+      return this;
+   }
 
    normalize(){
       let length = this.length;
