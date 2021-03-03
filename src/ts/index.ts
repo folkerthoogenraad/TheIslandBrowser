@@ -78,12 +78,12 @@ document.addEventListener("DOMContentLoaded", ()=>{
    game.physics.addStaticCollider(AABB.Create(64, -64, 16, 128));
    
    let scene = new Scene();
-   let player = new Player();
 
-   player.body.velocity.y = -256;
-   player.body.velocity.x = 128 * (Math.random() * 2 - 1);
+   for(let i = 0; i < 1; i++){
+      let player = new Player();
 
-   scene.addGameObject(player);
+      scene.addGameObject(player);
+   }
 
    game.scene = scene;
 

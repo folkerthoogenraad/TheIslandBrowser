@@ -54,6 +54,9 @@ export class Game{
 
       this.interUpdateTime += delta;
       
+      // TODO fix the issue where we are lagging behind!
+      // if there are too many updates at once and we can't keep up, we need to dump some frames
+      // and send a warning.
       while(this.interUpdateTime > this.fixedUpdateTime){
          this.interUpdateTime -= this.fixedUpdateTime;
          this.scene?.fixedUpdate(this.fixedUpdateTime);
