@@ -7,6 +7,8 @@ export class Physics{
    staticColliders: AABB[];
    bodies: Rigidbody[];
 
+   interpolate: boolean = true;
+
    constructor(){
       this.staticColliders = [];
       this.bodies = [];
@@ -27,13 +29,20 @@ export class Physics{
       this.bodies.splice(index, 1);
    }
    update(delta: number){
-      this.bodies.forEach(body => {
-         // TODO motion prediction and stuff
-         let f = body.game.interUpdateTime / body.game.fixedUpdateTime;
-
-         body.transform.interpolatedPosition.x = Curve.lerp(body.previousPosition.x, body.transform.position.x, f);
-         body.transform.interpolatedPosition.y = Curve.lerp(body.previousPosition.y, body.transform.position.y, f);
-      });
+      if(this.interpolate){
+         this.bodies.forEach(body => {
+            // TODO motion prediction and stuff
+            let f = body.game.interUpdateTime / body.game.fixedUpdateTime;
+   
+            body.transform.interpolatedPosition.x = Curve.lerp(body.previousPosition.x, body.transform.position.x, f);
+            body.transform.interpolatedPosition.y = Curve.lerp(body.previousPosition.y, body.transform.position.y, f);
+         });
+      }
+      else{
+         this.bodies.forEach(body => {
+            body.transform.interpolatedPosition.set(body.transform.position);
+         });
+      }
    }
 
    fixedUpdate(delta: number){
