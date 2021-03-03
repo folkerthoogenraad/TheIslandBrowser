@@ -59,8 +59,8 @@ export class Physics{
 
             if(!bbox.overlaps(box)) return;
 
-            let minOverlapX = bbox.minOverlapX(box);
-            let minOverlapY = bbox.minOverlapY(box);
+            let minOverlapX = bbox.minOverlapXWithBias(box, body.velocity.x);
+            let minOverlapY = bbox.minOverlapYWithBias(box, body.velocity.y);
 
             if(Math.abs(minOverlapX) < Math.abs(minOverlapY)){
                body.transform.position.x += minOverlapX;

@@ -50,6 +50,27 @@ export class AABB{
       if(motionUp > motionDown) return -motionDown;
       return motionUp;
    }
+   
+
+   minOverlapXWithBias(other: AABB, bias: number){
+      if(bias < 0) return other.right - this.left;
+      return -(this.right - other.left);
+
+   }
+   minOverlapYWithBias(other: AABB, bias: number){
+      if(bias < 0) return other.bottom - this.top;
+      return -(this.bottom - other.top);
+   }
+
+   set(other: AABB){
+      this.position.set(other.position);
+      this.size.set(other.size);
+      this.offset.set(other.offset);
+   }
+
+   clone(){
+      return new AABB(this.position.clone(), this.size.clone(), this.offset.clone());
+   }
 
    static Create(x: number, y: number, w: number, h: number){
       return new AABB(new Vector2(x, y), new Vector2(w, h));

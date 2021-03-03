@@ -30,6 +30,8 @@ export class GamepadInput{
 
    index: number;
 
+   deadZone: number = 0.1;
+
    constructor(index: number){
       this.index = index;
 
@@ -57,6 +59,8 @@ export class GamepadInput{
       }
       for(let i = 0; i < gamepad.axes.length; i++){
          this.axisState[i] = gamepad.axes[i];
+
+         if(Math.abs(this.axisState[i]) < this.deadZone) this.axisState[i] = 0; 
       }
    }
 

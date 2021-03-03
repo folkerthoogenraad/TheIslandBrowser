@@ -17,6 +17,8 @@ class Player extends GameObject{
 
    transform: Transform;
    body: Rigidbody;
+   
+   jumpHop: boolean = false;
 
    constructor(){
       super();
@@ -31,8 +33,6 @@ class Player extends GameObject{
       this.body.aabb.offset.y = 5;
       this.body.aabb.size.x = 10;
       this.body.aabb.size.y = 13;
-      
-      this.body.bouncyness = 0.9;
    }
 
    update(delta: number){
@@ -40,19 +40,22 @@ class Player extends GameObject{
 
       this.game.input.gamepads.forEach(pad => {
          if(pad.isButtonPressed(GamepadInput.BUTTON_A)){
-            this.body.velocity.y = -128;
+            this.jumpHop = true;
+         }
+      });
+   }
+
+   fixedUpdate(delta: number){
+      this.game.input.gamepads.forEach(pad => {
+         if(this.jumpHop){
+            this.body.velocity.y = -256;
          }
          this.body.velocity.x += pad.leftAxisX * 512 * delta;
       });
 
-      if(this.body.collidedX){ 
-         console.log("collided on x axis");
-      }
-      if(this.body.collidedY){ 
-         console.log("collided on y axis");
-      }
-
-      this.body.velocity.y += delta * 200;
+      this.body.velocity.y += delta * 512;
+      
+      this.jumpHop = false;
    }
 
    draw(graphics: Graphics){

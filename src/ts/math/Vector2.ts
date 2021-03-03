@@ -1,3 +1,5 @@
+import { Curve } from "util/Curve";
+
 export class Vector2{
    x: number;
    y: number;
@@ -87,6 +89,17 @@ export class Vector2{
       let distY = a.y - b.y;
 
       return Math.sqrt(distX * distX + distY * distY);
+   }
+
+   static lerp(a: Vector2, b: Vector2, f: number){
+      return this.lerpOut(a, b, new Vector2(), f);
+   }
+
+   static lerpOut(a: Vector2, b: Vector2, out: Vector2, f: number){
+      out.x = Curve.lerp(a.x, b.x, f);
+      out.y = Curve.lerp(a.y, b.y, f);
+      
+      return out;
    }
 
    static dot(a: Vector2, b: Vector2){
