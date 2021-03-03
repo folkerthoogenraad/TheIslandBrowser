@@ -33,7 +33,7 @@ export class GamepadInput{
    constructor(index: number){
       this.index = index;
 
-      let gamepad = this.getNavigationGamepad()!;
+      let gamepad = this.getNavigatorGamepad()!;
 
       for(let i = 0; i < gamepad.buttons.length; i++){
          this.previousButtonState.push(false);
@@ -50,7 +50,7 @@ export class GamepadInput{
       this.previousButtonState = this.buttonState;
       this.buttonState = temp;
 
-      let gamepad = this.getNavigationGamepad()!;
+      let gamepad = this.getNavigatorGamepad()!;
 
       for(let i = 0; i < gamepad.buttons.length; i++){
          this.buttonState[i] = gamepad.buttons[i].pressed;
@@ -70,12 +70,18 @@ export class GamepadInput{
       return !this.buttonState[buttonIndex] && this.previousButtonState[buttonIndex];
    }
 
-   getNavigationGamepad(){
+   get leftAxisX() { return this.axisState[GamepadInput.AXIS_LEFT_X];}
+   get leftAxisY() { return this.axisState[GamepadInput.AXIS_LEFT_Y];}
+   get rightAxisX() { return this.axisState[GamepadInput.AXIS_RIGHT_X];}
+   get rightAxisY() { return this.axisState[GamepadInput.AXIS_RIGHT_Y];}
+
+   getNavigatorGamepad(){
       const pads = navigator.getGamepads();
 
       for(let i = 0; i < pads.length; i++){
-         if(pads[i] === null) continue;
-         if(pads[i].index === this.index) return pads[i];
+         let pad = pads[i];
+         if(pad === null) continue;
+         if(pad.index === this.index) return pad;
       }
 
       return undefined;
@@ -88,12 +94,18 @@ export class Input{
    constructor(){
       this.gamepads = [];
 
-      window.addEventListener("gamepadconnected", (event: GamepadEvent) => {
+      // Weird construction but typescript hates progress 
+      window.addEventListener("gamepadconnected", ev => {
+         let event = ev as GamepadEvent;
+
          console.log("Gamepad connected.");
+
          this.gamepads.push(new GamepadInput(event.gamepad.index));
        });
        
-       window.addEventListener("gamepaddisconnected", (event: GamepadEvent) => {
+       window.addEventListener("gamepaddisconnected", ev => {
+         let event = ev as GamepadEvent;
+
          console.log("Gamepad disconnected.");
          
          let index = -1;

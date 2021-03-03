@@ -20,8 +20,8 @@ export class Sprite{
    get height() { return this.sourceHeight; }
 
    center(){
-      this.offsetX = this.width;
-      this.offsetY = this.height;
+      this.offsetX = this.width / 2;
+      this.offsetY = this.height / 2;
 
       return this;
    }
