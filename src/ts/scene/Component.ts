@@ -16,6 +16,8 @@ export class Component{
 
    update(delta: number){
    }
+   fixedUpdate(delta: number){
+   }
 
    draw(graphics: Graphics){
    }

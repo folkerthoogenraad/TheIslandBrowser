@@ -32,6 +32,9 @@ export class GameObject {
    update(delta: number){
       this.components.forEach(obj => obj.update(delta));
    }
+   fixedUpdate(delta: number){
+      this.components.forEach(obj => obj.fixedUpdate(delta));
+   }
 
    draw(graphics: Graphics){
       this.components.forEach(obj => obj.draw(graphics));

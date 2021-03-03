@@ -8,6 +8,9 @@ export class Rigidbody extends Component{
    transform!: Transform;
    velocity: Vector2 = new Vector2();
    mass: number = 1;
+   bouncyness: number = 0;
+
+   previousPosition: Vector2 = new Vector2();
 
    collidedX: boolean = false;
    collidedY: boolean = false;

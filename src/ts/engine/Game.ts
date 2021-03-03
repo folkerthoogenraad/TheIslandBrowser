@@ -6,6 +6,9 @@ import { Physics } from "./Physics";
 
 export class Game{   
    currentTime: number = 0;
+   
+   fixedUpdateTime: number = 1 / 30;
+   interUpdateTime: number = 0;
 
    private running: boolean = false;
    private animationFrame: number = 0;
@@ -48,7 +51,14 @@ export class Game{
       if(delta > 0.1){ delta = 0.1; }
 
       this.input.poll();
+
+      this.interUpdateTime += delta;
       
+      while(this.interUpdateTime > this.fixedUpdateTime){
+         this.interUpdateTime -= this.fixedUpdateTime;
+         this.scene?.fixedUpdate(this.fixedUpdateTime);
+         this.physics.fixedUpdate(this.fixedUpdateTime);
+      }
       this.scene?.update(delta);
       this.physics.update(delta);
 

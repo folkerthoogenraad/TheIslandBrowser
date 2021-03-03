@@ -33,6 +33,9 @@ export class Scene{
    update(delta: number){
       this.gameObjects.forEach(obj => obj.update(delta));
    }
+   fixedUpdate(delta: number){
+      this.gameObjects.forEach(obj => obj.fixedUpdate(delta));
+   }
 
    draw(graphics: Graphics){
       graphics.setCamera(this.camera);

@@ -1,6 +1,7 @@
 import { Graphics } from "graphics/Graphics";
 import { AABB } from "math/AABB";
 import { Rigidbody } from "scene/components/Rigidbody";
+import { Curve } from "util/Curve";
 
 export class Physics{
    staticColliders: AABB[];
@@ -25,8 +26,23 @@ export class Physics{
 
       this.bodies.splice(index, 1);
    }
-
    update(delta: number){
+      this.bodies.forEach(body => {
+         // TODO motion prediction and stuff
+         let f = body.game.interUpdateTime / body.game.fixedUpdateTime;
+
+         body.transform.interpolatedPosition.x = Curve.lerp(body.previousPosition.x, body.transform.position.x, f);
+         body.transform.interpolatedPosition.y = Curve.lerp(body.previousPosition.y, body.transform.position.y, f);
+      });
+   }
+
+   fixedUpdate(delta: number){
+      // Set the previous positions
+      this.bodies.forEach(body => {
+         body.previousPosition.x = body.transform.position.x;
+         body.previousPosition.y = body.transform.position.y;
+      });
+
       // Move all the bodies
       this.bodies.forEach(body => {
          body.transform.position.x += body.velocity.x * delta;
@@ -59,10 +75,10 @@ export class Physics{
          });
 
          if(body.collidedX){
-            body.velocity.x = -body.velocity.x * 0.5;
+            body.velocity.x = -body.velocity.x * body.bouncyness;
          }
          if(body.collidedY){
-            body.velocity.y = -body.velocity.y * 0.5;
+            body.velocity.y = -body.velocity.y * body.bouncyness;
          }
       });
    }
@@ -74,6 +90,8 @@ export class Physics{
          graphics.drawAABB(collider, true);
       });
 
+      return;
+      
       graphics.setColor("rgba(0,255,0, 0.6)");
       this.bodies.forEach(body => {
          let collider = body.boundingBox;

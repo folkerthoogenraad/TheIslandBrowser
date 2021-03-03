@@ -27,10 +27,12 @@ class Player extends GameObject{
       this.transform = this.addComponent(new Transform());
       this.body = this.addComponent(new Rigidbody());
 
-      this.body.aabb.offset.x = 8;
-      this.body.aabb.offset.y = 8;
-      this.body.aabb.size.x = 16;
-      this.body.aabb.size.y = 16;
+      this.body.aabb.offset.x = 5;
+      this.body.aabb.offset.y = 5;
+      this.body.aabb.size.x = 10;
+      this.body.aabb.size.y = 13;
+      
+      this.body.bouncyness = 0.9;
    }
 
    update(delta: number){
@@ -56,7 +58,7 @@ class Player extends GameObject{
    draw(graphics: Graphics){
       super.draw(graphics);
 
-      graphics.drawSprite(this.sprite, this.transform.position.x, this.transform.position.y);
+      graphics.drawSprite(this.sprite, this.transform.interpolatedPosition.x, this.transform.interpolatedPosition.y);
    }
 
 }
