@@ -26,7 +26,21 @@ export class Graphics{
       this.context.clearRect(x, y, width, height);
    }
 
-   drawSprite(sprite: Sprite, x: number, y: number){
+   drawSprite(sprite: Sprite, x: number, y: number, scaleX: number = 1, scaleY: number = 1, rotation: number = 0){
+      this.context.save();
+
+      this.context.translate(x, y);
+      this.context.scale(scaleX, scaleY);
+      this.context.rotate(rotation);
+
+      this.context.drawImage(sprite.image, 
+         sprite.sourceX, sprite.sourceY, sprite.sourceWidth, sprite.sourceHeight,
+         - sprite.offsetX, - sprite.offsetY, sprite.width, sprite.height);
+
+      this.context.restore();
+   }
+
+   drawSpriteSimple(sprite: Sprite, x: number, y: number){
       this.context.drawImage(sprite.image, 
          sprite.sourceX, sprite.sourceY, sprite.sourceWidth, sprite.sourceHeight,
          x - sprite.offsetX, y - sprite.offsetY, sprite.width, sprite.height);

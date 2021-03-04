@@ -9,8 +9,9 @@ import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
 import { Scene } from "scene/Scene";
+import { TileMap } from "tilemap/TileMap";
 
-let sheet = new SpriteSheet(document.getElementById("resource_player") as HTMLImageElement);
+let sheet = SpriteSheet.fromHTML("Player");
 
 class Player extends GameObject{
    sprite: Sprite;
@@ -19,6 +20,7 @@ class Player extends GameObject{
    body: Rigidbody;
    
    jumpHop: boolean = false;
+   facing: number = 1;
 
    constructor(){
       super();
@@ -51,6 +53,13 @@ class Player extends GameObject{
             this.body.velocity.y = -256;
          }
          this.body.velocity.x += pad.leftAxisX * 512 * delta;
+
+         if(pad.leftAxisX > 0){
+            this.facing = 1;
+         }
+         if(pad.leftAxisX < 0){
+            this.facing = -1;
+         }
       });
 
       this.body.velocity.y += delta * 512;
@@ -61,29 +70,30 @@ class Player extends GameObject{
    draw(graphics: Graphics){
       super.draw(graphics);
 
-      graphics.drawSprite(this.sprite, this.transform.interpolatedPosition.x, this.transform.interpolatedPosition.y);
+      graphics.drawSprite(this.sprite, 
+         this.transform.interpolatedPosition.x, this.transform.interpolatedPosition.y,
+         this.facing, 1, 
+         0);
    }
 
 }
 
-document.addEventListener("DOMContentLoaded", ()=>{
+document.addEventListener("DOMContentLoaded", async ()=>{
    let canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
    let game = new Game(canvas);
-
-   game.physics.addStaticCollider(AABB.Create(-64, 64, 128, 16));
-   game.physics.addStaticCollider(AABB.Create(-64, -64-16, 128, 16));
-
-   game.physics.addStaticCollider(AABB.Create(-64, -64, 16, 128));
-   game.physics.addStaticCollider(AABB.Create(64, -64, 16, 128));
    
    let scene = new Scene();
 
-   for(let i = 0; i < 1; i++){
-      let player = new Player();
+   scene.tilemap = await TileMap.fromTiledMapDownload("/assets/levels/level0.json", (obj) => {
+      if(obj.type === "Collider"){
+         game.physics.addStaticCollider(AABB.Create(obj.x, obj.y, obj.width, obj.height));
+      }
+   });
+   
+   let player = new Player();
 
-      scene.addGameObject(player);
-   }
+   scene.addGameObject(player);
 
    game.scene = scene;
 

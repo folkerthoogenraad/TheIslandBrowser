@@ -93,13 +93,13 @@ export class Physics{
    }
 
    drawDebug(graphics: Graphics){
+      return;
       graphics.setColor("rgba(255,0,0, 0.6)");
 
       this.staticColliders.forEach(collider => {
          graphics.drawAABB(collider, true);
       });
 
-      return;
       
       graphics.setColor("rgba(0,255,0, 0.6)");
       this.bodies.forEach(body => {

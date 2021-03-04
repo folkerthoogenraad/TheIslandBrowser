@@ -1,12 +1,14 @@
 import { Game } from "engine/Game";
 import { Camera } from "graphics/Camera";
 import { Graphics } from "graphics/Graphics";
+import { TileMap } from "tilemap/TileMap";
 import { GameObject } from "./GameObject";
 
 export class Scene{
    camera: Camera;
    gameObjects: GameObject[];
    game!: Game;
+   tilemap?: TileMap;
 
    initialized: boolean = false;
 
@@ -40,6 +42,7 @@ export class Scene{
    draw(graphics: Graphics){
       graphics.setCamera(this.camera);
 
+      this.tilemap?.draw(graphics);
       this.gameObjects.forEach(obj => obj.draw(graphics));
    }
 

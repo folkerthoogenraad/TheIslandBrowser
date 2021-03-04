@@ -30,7 +30,7 @@ export class GamepadInput{
 
    index: number;
 
-   deadZone: number = 0.1;
+   deadZone: number = 0.2;
 
    constructor(index: number){
       this.index = index;

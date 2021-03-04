@@ -44,4 +44,10 @@ export class SpriteSheet{
 
       return sprite;
    }
+
+   static fromHTML(id: string){
+      let element = document.getElementById(id) as HTMLImageElement;
+
+      return new SpriteSheet(element);
+   }
 }

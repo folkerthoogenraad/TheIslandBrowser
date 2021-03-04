@@ -7,7 +7,7 @@ import { Physics } from "./Physics";
 export class Game{   
    currentTime: number = 0;
    
-   fixedUpdateTime: number = 1 / 20;
+   fixedUpdateTime: number = 1 / 60;
    interUpdateTime: number = 0;
 
    private running: boolean = false;
