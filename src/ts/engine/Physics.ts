@@ -60,8 +60,10 @@ export class Physics{
 
       // Unstuck all the bodies
       this.bodies.forEach(body => {
-         body.collidedX = false;
-         body.collidedY = false;
+         body.collidedTop = false;
+         body.collidedBottom = false;
+         body.collidedLeft = false;
+         body.collidedRight = false;
 
          this.staticColliders.forEach(box => {
             let bbox = body.boundingBox;
@@ -73,20 +75,22 @@ export class Physics{
 
             if(Math.abs(minOverlapX) < Math.abs(minOverlapY)){
                body.transform.position.x += minOverlapX;
-               body.collidedX = true;
+               body.collidedLeft = body.velocity.x < 0;
+               body.collidedRight = body.velocity.x > 0;
             }
             else{
                body.transform.position.y += minOverlapY;
-               body.collidedY = true;
+               body.collidedBottom = body.velocity.y > 0;
+               body.collidedTop = body.velocity.y < 0;
             }
 
 
          });
 
-         if(body.collidedX){
+         if(body.collidedLeft || body.collidedRight){
             body.velocity.x = -body.velocity.x * body.bouncyness;
          }
-         if(body.collidedY){
+         if(body.collidedBottom || body.collidedTop){
             body.velocity.y = -body.velocity.y * body.bouncyness;
          }
       });

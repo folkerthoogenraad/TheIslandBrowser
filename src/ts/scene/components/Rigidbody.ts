@@ -12,8 +12,10 @@ export class Rigidbody extends Component{
 
    previousPosition: Vector2 = new Vector2();
 
-   collidedX: boolean = false;
-   collidedY: boolean = false;
+   collidedLeft: boolean = false;
+   collidedRight: boolean = false;
+   collidedTop: boolean = false;
+   collidedBottom: boolean = false;
 
    aabb: AABB = new AABB();
 

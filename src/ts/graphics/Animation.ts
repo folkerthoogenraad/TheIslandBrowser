@@ -16,10 +16,18 @@ export class Animation{
       return this;
    }
 
+   center(){
+      this.sprites.forEach(sprite => sprite.center());
+      return this;
+   }
+
    get index(){
       return this._index % this.frames;
    }
    get frames(){
       return this.sprites.length;
+   }
+   get frame(){
+      return this.sprites[Math.floor(this.index)];
    }
 }

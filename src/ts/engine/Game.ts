@@ -20,7 +20,7 @@ export class Game{
 
    constructor(canvas: HTMLCanvasElement){
       this.graphics = new Graphics(canvas);
-      this.input = new Input();
+      this.input = new Input(canvas);
       this.physics = new Physics();
 
       window.addEventListener("resize", () => this.graphics.updateSize());
@@ -70,6 +70,8 @@ export class Game{
 
       this.scene?.draw(this.graphics);
       this.physics.drawDebug(this.graphics);
+
+      this.input.flush();
    }
 
    _cancelAnimationFrame(){

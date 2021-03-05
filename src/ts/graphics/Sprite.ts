@@ -1,3 +1,5 @@
+import { Animation } from "./Animation";
+
 export class Sprite{
    image: CanvasImageSource;
 
@@ -43,6 +45,23 @@ export class SpriteSheet{
       sprite.sourceHeight = h;
 
       return sprite;
+   }
+   
+   getAnimation(x: number, y: number, w: number, h: number, count: number){
+      let animation = new Animation();
+
+      for(let i = 0; i < count; i++){
+         let sprite = new Sprite(this.image);
+   
+         sprite.sourceX = x + i * w;
+         sprite.sourceY = y;
+         sprite.sourceWidth = w;
+         sprite.sourceHeight = h;
+
+         animation.addFrame(sprite);
+      }
+
+      return animation;
    }
 
    static fromHTML(id: string){

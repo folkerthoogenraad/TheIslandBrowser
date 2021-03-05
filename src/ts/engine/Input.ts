@@ -1,27 +1,27 @@
 // Controller map!
 export class GamepadInput{
-   public static readonly AXIS_LEFT_X = 0;
-   public static readonly AXIS_LEFT_Y = 1;
-   public static readonly AXIS_RIGHT_X = 2;
-   public static readonly AXIS_RIGHT_Y = 3;
+   public static readonly AxisLeftX = 0;
+   public static readonly AxisLeftY = 1;
+   public static readonly AxisRightX = 2;
+   public static readonly AxisRightY = 3;
 
-   public static readonly BUTTON_A = 0;
-   public static readonly BUTTON_B = 1;
-   public static readonly BUTTON_X = 2;
-   public static readonly BUTTON_Y = 3;
+   public static readonly ButtonA = 0;
+   public static readonly ButtonB = 1;
+   public static readonly ButtonX = 2;
+   public static readonly ButtonY = 3;
    
-   public static readonly BUTTON_DPAD_UP = 12;
-   public static readonly BUTTON_DPAD_DOWN = 13;
-   public static readonly BUTTON_DPAD_LEFT = 14;
-   public static readonly BUTTON_DPAD_RIGHT = 15;
+   public static readonly ButtonDpadUp = 12;
+   public static readonly ButtonDpadDown = 13;
+   public static readonly ButtonDpadLeft = 14;
+   public static readonly ButtonDpadRight = 15;
 
-   public static readonly BUTTON_LEFT_BUMPER = 4;
-   public static readonly BUTTON_RIGHT_BUMPER = 5;
-   public static readonly BUTTON_LEFT_TRIGGER = 6;
-   public static readonly BUTTON_RIGHT_TRIGGER = 7;
+   public static readonly ButtonLeftBumper = 4;
+   public static readonly ButtonRightBumper = 5;
+   public static readonly ButtonLeftTrigger = 6;
+   public static readonly ButtonRightTrigger = 7;
 
-   public static readonly BUTTON_MENU = 8;
-   public static readonly BUTTON_START = 9;
+   public static readonly ButtonMenu = 8;
+   public static readonly ButtonStart = 9;
 
    previousButtonState: boolean[] = [];
    buttonState: boolean[] = [];
@@ -74,10 +74,10 @@ export class GamepadInput{
       return !this.buttonState[buttonIndex] && this.previousButtonState[buttonIndex];
    }
 
-   get leftAxisX() { return this.axisState[GamepadInput.AXIS_LEFT_X];}
-   get leftAxisY() { return this.axisState[GamepadInput.AXIS_LEFT_Y];}
-   get rightAxisX() { return this.axisState[GamepadInput.AXIS_RIGHT_X];}
-   get rightAxisY() { return this.axisState[GamepadInput.AXIS_RIGHT_Y];}
+   get leftAxisX() { return this.axisState[GamepadInput.AxisLeftX];}
+   get leftAxisY() { return this.axisState[GamepadInput.AxisLeftY];}
+   get rightAxisX() { return this.axisState[GamepadInput.AxisRightX];}
+   get rightAxisY() { return this.axisState[GamepadInput.AxisRightY];}
 
    getNavigatorGamepad(){
       const pads = navigator.getGamepads();
@@ -92,11 +92,72 @@ export class GamepadInput{
    }
 }
 
-export class Input{
-   gamepads: GamepadInput[];
+type Key = string;
 
-   constructor(){
+export class Keyboard{
+   public static readonly KeyEnter : Key = "Enter";
+   public static readonly KeyTab : Key = "Tab";
+   public static readonly KeySpace : Key = " ";
+   
+   public static readonly KeyArrowUp : Key = "ArrowUp";
+   public static readonly KeyArrowDown : Key = "ArrowDown";
+   public static readonly KeyArrowLeft : Key = "ArrowLeft";
+   public static readonly KeyArrowRight : Key = "ArrowRight";
+
+   downKeys: Set<Key>;
+   pressedKeys: Set<Key>;
+   releasedKeys: Set<Key>;
+
+   root?: HTMLElement;
+
+   constructor(root?: HTMLElement){
+      this.downKeys = new Set<Key>();
+      this.pressedKeys = new Set<Key>();
+      this.releasedKeys = new Set<Key>();
+
+      console.log("init root!");
+
+      this.root = root;
+      this.root?.addEventListener("keydown", event => {
+         if(event.repeat) return;
+
+         this.pressedKeys.add(event.key);
+         this.downKeys.add(event.key);
+      });
+      this.root?.addEventListener("keyup", event =>{
+         if(event.repeat) return;
+
+         this.releasedKeys.add(event.key);
+         this.downKeys.delete(event.key);
+      });
+   }
+
+   flush(){
+      this.pressedKeys.clear();
+      this.releasedKeys.clear();
+   }
+
+   isKeyDown(key: Key){
+      return this.downKeys.has(key);
+   }
+   isKeyPressed(key: Key){
+      return this.pressedKeys.has(key);
+   }
+   isKeyReleased(key: Key){
+      return this.releasedKeys.has(key);
+   }
+}
+
+export class Input {
+   gamepads: GamepadInput[];
+   keyboard: Keyboard;
+
+   root?: HTMLElement;
+
+   constructor(root?: HTMLElement){
       this.gamepads = [];
+      this.keyboard = new Keyboard(root);
+      this.root = root;
 
       // Weird construction but typescript hates progress 
       window.addEventListener("gamepadconnected", ev => {
@@ -129,5 +190,8 @@ export class Input{
 
    poll(){
       this.gamepads.forEach(pad => pad.poll());
+   }
+   flush(){
+      this.keyboard.flush();
    }
 }
