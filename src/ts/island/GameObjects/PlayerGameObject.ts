@@ -1,6 +1,7 @@
 import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
+import { HealthComponent } from "island/Components/HealthComponent";
 import { PlayerInputComponent } from "island/Components/PlayerInputComponent";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
@@ -21,6 +22,7 @@ export class PlayerGameObject extends GameObject{
    transform: Transform;
    body: Rigidbody;
    input: PlayerInputComponent;
+   health: HealthComponent;
    
    jumpHop: boolean = false;
    dashHop: boolean = false;
@@ -28,29 +30,43 @@ export class PlayerGameObject extends GameObject{
    jumping: boolean = false;
    facing: number = 1;
 
-   dashSpeed: number = 4.7 * 60;
    jumpSpeed: number = -3 * 60;
    moveSpeed: number = 1.5 * 60;
+
+   cayoteTime: number = 0.05;
+   groundLeaveTime: number = 0;
 
    groundAcceleration: number = 0.2 * 60 * 60;
    gravity: number = 0.25 * 60 * 60;
    gravityUpFraction: number = 0.5;
+   gravityWallFraction: number = 0.4;
 
    grounded: boolean = false;
    wallLeft: boolean = false;
    wallRight: boolean = false;
 
+   hadWall: boolean = false;
+
    dashing: boolean = false;
+   dashSpeed: number = 4.7 * 60;
+   dashTime: number = 24 / (this.dashSpeed);
+
    dashTimer: number = 0;
    dashTimeout: number = 0;
    dashSavedSpeed: number = 0;
-   dashedSavedMultiplied: number = 1.1;
+   dashSavedAddition: number = 5;
 
    wallJumpTimer: number = 0;
    get wallJumping() { return this.wallJumpTimer > 0; }
 
    get canMove() { return !this.wallJumping && !this.dashing; }
    get useGravity() { return !this.dashing; }
+   get hasWall() { return this.wallLeft || this.wallRight; }
+   
+   canDash: boolean = false;
+   canDoublejump: boolean = false;
+   get canJump() { return  this.grounded || (this.groundLeaveTime < this.cayoteTime); }
+
 
    constructor(){
       super();
@@ -67,11 +83,16 @@ export class PlayerGameObject extends GameObject{
       this.transform = this.addComponent(new Transform());
       this.body = this.addComponent(new Rigidbody());
       this.input = this.addComponent(new PlayerInputComponent());
+      this.health = this.addComponent(new HealthComponent());
 
-      this.body.aabb.offset.x = 5;
-      this.body.aabb.offset.y = 5;
-      this.body.aabb.size.x = 10;
-      this.body.aabb.size.y = 13;
+      this.health.onDeath.listen(this.onDeath.bind(this));
+      
+      this.body.useDynamicCollisions = true;
+
+      this.body.localAABB.offset.x = 5;
+      this.body.localAABB.offset.y = 5;
+      this.body.localAABB.size.x = 10;
+      this.body.localAABB.size.y = 13;
    }
 
    update(delta: number){
@@ -83,12 +104,44 @@ export class PlayerGameObject extends GameObject{
       if(this.input.dashPressed){
          this.dashHop = true;
       }
+
+      let cam = this.scene.camera;
+      cam.center.set(this.transform.interpolatedPosition);
+
+      // TODO do this right.
+      const sceneWidth = 640;
+      const sceneHeight = 360;
+
+      if(cam.center.x - cam.width / 2 < 0) cam.center.x = cam.width / 2;
+      if(cam.center.x + cam.width / 2 > sceneWidth) cam.center.x = sceneWidth - cam.width / 2;
+
+      if(cam.center.y - cam.height / 2 < 0) cam.center.y = cam.height / 2;
+      if(cam.center.y + cam.height / 2 > sceneHeight) cam.center.y = sceneHeight - cam.height / 2;
    }
 
    fixedUpdate(delta: number){
+      super.fixedUpdate(delta);
+
       this.grounded = this.body.collidedBottom;
       this.wallLeft = this.body.collidedLeft;
       this.wallRight = this.body.collidedRight;
+
+      if(this.wallLeft || this.wallRight){
+         if(!this.hadWall && !this.grounded && this.body.velocity.y > 0){
+            this.body.velocity.y = 0;
+         }
+         this.hadWall = true;
+      }
+      else{
+         this.hadWall = false;
+      }
+
+      if(this.grounded) {
+         this.groundLeaveTime = 0;
+      }
+      else{
+         this.groundLeaveTime += delta;
+      }
 
 
       // Make sure we stick to the wall
@@ -145,23 +198,28 @@ export class PlayerGameObject extends GameObject{
    }
 
    updateDash(delta: number){
+      if(this.grounded){
+         this.canDash = true;
+      }
+
       if(this.dashing){
          this.dashTimer -= delta;
 
          if(this.dashTimer < 0){
             this.dashing = false;
-            this.body.velocity.x = this.dashSavedSpeed * this.dashedSavedMultiplied;
+            this.body.velocity.x = this.dashSavedSpeed + this.facing * this.dashSavedAddition;
          }
       }
       else{
          this.dashTimeout -= delta;
       }
 
-      if(this.dashHop && this.dashTimeout < 0){
+      if(this.dashHop && this.dashTimeout < 0 && this.canDash && !this.grounded){
          this.dashing = true;
+         this.canDash = false;
          this.dashSavedSpeed = this.body.velocity.x;
-         this.dashTimer = 0.1;
-         this.dashTimeout = 0.1;
+         this.dashTimer = this.dashTime;
+         this.dashTimeout = 0.2;
          this.body.velocity.y = 0;
          this.body.velocity.x = this.facing * this.dashSpeed;
       }
@@ -171,7 +229,21 @@ export class PlayerGameObject extends GameObject{
    updateJump(delta: number){
       this.wallJumpTimer -= delta;
 
-      if(this.grounded){
+      if(this.canJump){
+         if(this.jumpHop){
+            this.body.velocity.y = this.jumpSpeed;
+            this.jumping = true;
+
+            if(!this.grounded){
+               console.log("cayote jump!");
+            }
+
+            // This is really hacky but whatever
+            this.groundLeaveTime = this.cayoteTime;
+         }
+         this.jumpHop = false;
+      }
+      else if(this.canDoublejump){
          if(this.jumpHop){
             this.body.velocity.y = this.jumpSpeed;
             this.jumping = true;
@@ -187,6 +259,9 @@ export class PlayerGameObject extends GameObject{
 
             this.jumping = true;
             this.jumpHop = false;
+
+            // You can dash after your walljump :)
+            this.canDash = true;
          }
          if(this.wallRight && this.jumpHop){
             this.body.velocity.x = -this.moveSpeed;
@@ -196,6 +271,9 @@ export class PlayerGameObject extends GameObject{
 
             this.jumping = true;
             this.jumpHop = false;
+
+            // You can dash after your walljump :)
+            this.canDash = true;
          }
       }
       
@@ -241,8 +319,8 @@ export class PlayerGameObject extends GameObject{
          this.body.velocity.y += this.gravity * this.gravityUpFraction * delta;
       }
       else{
-         if(this.wallLeft || this.wallRight){
-            this.body.velocity.y += this.gravity * this.gravityUpFraction * delta;
+         if(this.hasWall){
+            this.body.velocity.y += this.gravity * this.gravityWallFraction * delta;
          }else{
             this.body.velocity.y += this.gravity * delta;
          }
@@ -280,5 +358,9 @@ export class PlayerGameObject extends GameObject{
          this.transform.interpolatedPosition.x, this.transform.interpolatedPosition.y,
          this.facing, 1, 
          0);
+   }
+
+   onDeath(){
+      this.scene.removeGameObject(this);
    }
 }

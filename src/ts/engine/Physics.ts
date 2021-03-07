@@ -4,18 +4,12 @@ import { Rigidbody } from "scene/components/Rigidbody";
 import { Curve } from "util/Curve";
 
 export class Physics{
-   staticColliders: AABB[];
    bodies: Rigidbody[];
 
    interpolate: boolean = true;
 
    constructor(){
-      this.staticColliders = [];
       this.bodies = [];
-   }
-
-   addStaticCollider(aabb: AABB){
-      this.staticColliders.push(aabb);
    }
 
    addBody(body: Rigidbody){
@@ -58,20 +52,27 @@ export class Physics{
          body.transform.position.y += body.velocity.y * delta;
       });
 
+      // TODO broadphase narrow phase stuff :)
+      // Maybe start with sweep and prune
       // Unstuck all the bodies
       this.bodies.forEach(body => {
+         if(body.solid) return;
+
          body.collidedTop = false;
          body.collidedBottom = false;
          body.collidedLeft = false;
          body.collidedRight = false;
 
-         this.staticColliders.forEach(box => {
+         this.bodies.forEach(box => {
+            if(!box.solid) return;
+   
             let bbox = body.boundingBox;
+            let otherbbox = box.boundingBox;
 
-            if(!bbox.overlaps(box)) return;
+            if(!bbox.overlaps(otherbbox)) return;
 
-            let minOverlapX = bbox.minOverlapXWithBias(box, body.velocity.x);
-            let minOverlapY = bbox.minOverlapYWithBias(box, body.velocity.y);
+            let minOverlapX = bbox.minOverlapXWithBias(otherbbox, body.velocity.x);
+            let minOverlapY = bbox.minOverlapYWithBias(otherbbox, body.velocity.y);
 
             if(Math.abs(minOverlapX) < Math.abs(minOverlapY)){
                body.transform.position.x += minOverlapX;
@@ -94,31 +95,55 @@ export class Physics{
             body.velocity.y = -body.velocity.y * body.bouncyness;
          }
       });
+
+      // A little more optimized but still really fucking stupid :)
+      for(let i = 0; i < this.bodies.length; i++){
+         let body = this.bodies[i];
+
+         let bbox = body.boundingBox;
+
+         if(!body.useDynamicCollisions) continue;
+
+         for(let j = i + 1; j < this.bodies.length; j++){
+            let other = this.bodies[j];
+
+            if(!other.useDynamicCollisions) continue;
+
+            if(bbox.overlaps(other.boundingBox)){
+               body.onCollision.emit(other);
+               other.onCollision.emit(body);
+            }
+         }
+      }
    }
 
    drawDebug(graphics: Graphics){
       return;
       graphics.setColor("rgba(255,0,0, 0.6)");
-
-      this.staticColliders.forEach(collider => {
-         graphics.drawAABB(collider, true);
+      
+      this.bodies.forEach(body => {
+         if(!body.solid) return;
+         
+         graphics.drawAABB(body.boundingBox, true);
       });
-
+      
       
       graphics.setColor("rgba(0,255,0, 0.6)");
       this.bodies.forEach(body => {
+         if(body.solid) return;
          let collider = body.boundingBox;
-
+         
          graphics.drawAABB(collider, true);
       });
       
       graphics.setColor("rgba(0,0,255, 0.6)");
       this.bodies.forEach(body => {
          let transform = body.transform;
-
+         
          graphics.drawRectangle(
             transform.position.x - 1, transform.position.y - 1,
             2, 2, true);
       });
+      return;
    }
 }

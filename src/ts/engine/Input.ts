@@ -31,6 +31,7 @@ export class GamepadInput{
    index: number;
 
    deadZone: number = 0.2;
+   fullZone: number = 0.4;
 
    constructor(index: number){
       this.index = index;
@@ -61,6 +62,7 @@ export class GamepadInput{
          this.axisState[i] = gamepad.axes[i];
 
          if(Math.abs(this.axisState[i]) < this.deadZone) this.axisState[i] = 0; 
+         if(Math.abs(this.axisState[i]) > 1 - this.fullZone) this.axisState[i] = Math.sign(this.axisState[i]); 
       }
    }
 
@@ -98,6 +100,8 @@ export class Keyboard{
    public static readonly KeyEnter : Key = "Enter";
    public static readonly KeyTab : Key = "Tab";
    public static readonly KeySpace : Key = " ";
+
+   public static readonly KeyC : Key = "c";
    
    public static readonly KeyArrowUp : Key = "ArrowUp";
    public static readonly KeyArrowDown : Key = "ArrowDown";
@@ -115,9 +119,8 @@ export class Keyboard{
       this.pressedKeys = new Set<Key>();
       this.releasedKeys = new Set<Key>();
 
-      console.log("init root!");
-
       this.root = root;
+      this.root = document.body; // Fuck
       this.root?.addEventListener("keydown", event => {
          if(event.repeat) return;
 

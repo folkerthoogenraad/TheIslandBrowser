@@ -7,6 +7,10 @@
 
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+   <link rel="preconnect" href="https://fonts.gstatic.com">
+   <link href="https://fonts.googleapis.com/css2?family=Oxygen&display=swap" rel="stylesheet">
+
    
    <title>The Island</title>
 </head>
@@ -16,6 +20,36 @@
    <img src="assets/tilemaps/TilesetTrees.png" alt="" class="resource" id="TilesetTrees">
    
    <img src="assets/img/player.png" alt="" class="resource" id="Player">
+
+   <div class="game-overlay">
+      <div class="debug-alpha-message">Pre-alpha build</div>
+
+      <div class="bar-top">
+         <span class="complete-banner">Level Completed</span>
+         <span class="fail-banner">Level Failed</span>
+      </div>
+      
+      <div class="bar-bottom">
+         <span class="complete-banner" id="final-time">0:00</span> <span class="complete-banner best-time">(<span id="best-time">0:00</span>) </span>
+      </div>
+   </div>
+
+   <div class="modal">
+      <div class="background"></div>
+      <div class="content">
+         <h2>Hi! Welcome to this stupid game</h2>
+
+         <p>You can play with either keyboard or gamepad (recommended)</p>
+         <p>Jump with Space on keyboard or the 'A' button on gamepad</p>
+         <p>Dash whilst in the air with with 'C' on your keyboard or the 'RightTrigger' on the gampad</p>
+         <p>Move around with the arrow keys or with the left stick on the controller</p>
+         <p>Press Enter or Y on the gamepad to restart the level</p>
+
+         <p><strong>Also note, this game is in super duper uber alpha so be nice ✔</strong></p>
+         
+         <div class="close">Ok, just let me play the game</div>
+      </div>
+   </div>
 
    <script src="./bundle.js"></script>
 </body>

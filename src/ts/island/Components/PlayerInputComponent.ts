@@ -16,7 +16,10 @@ export class PlayerInputComponent extends Component{
    update(delta: number){
       this.jumpPressed = false;
       this.dashPressed = false;
+      this.jumpDown = false;
+      this.direction = 0;
 
+      // TODO actually switch between controllers instead of this half baked half assed solution
       this.game.input.gamepads.forEach(pad => {
          if(pad.isButtonPressed(GamepadInput.ButtonA)){
             this.jumpPressed = true;
@@ -24,14 +27,18 @@ export class PlayerInputComponent extends Component{
          if(pad.isButtonPressed(GamepadInput.ButtonRightTrigger)){
             this.dashPressed = true;
          }
-         this.jumpDown = pad.isButtonDown(GamepadInput.ButtonA);
+         if(pad.isButtonDown(GamepadInput.ButtonA)){
+            this.jumpDown = true;
+         }
 
          this.direction = pad.leftAxisX;
       });
 
-      // if(this.game.input.keyboard.isKeyPressed(Keyboard.KeySpace)) this.jumpPressed = true;
+      if(this.game.input.keyboard.isKeyPressed(Keyboard.KeySpace)) this.jumpPressed = true;
+      if(this.game.input.keyboard.isKeyDown(Keyboard.KeySpace)) this.jumpDown = true;
+      if(this.game.input.keyboard.isKeyPressed(Keyboard.KeyC)) this.dashPressed = true;
 
-      // if(this.game.input.keyboard.isKeyDown(Keyboard.KeyArrowLeft)) this.direction = -1;
-      // if(this.game.input.keyboard.isKeyDown(Keyboard.KeyArrowRight)) this.direction = 1;
+      if(this.game.input.keyboard.isKeyDown(Keyboard.KeyArrowLeft)) this.direction = -1;
+      if(this.game.input.keyboard.isKeyDown(Keyboard.KeyArrowRight)) this.direction = 1;
    }
 }

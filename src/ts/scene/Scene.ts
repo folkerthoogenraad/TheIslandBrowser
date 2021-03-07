@@ -46,6 +46,11 @@ export class Scene{
       this.gameObjects.forEach(obj => obj.draw(graphics));
    }
 
+   updateSize(){
+      let asp = this.game.canvas.width / this.game.canvas.height;
+      this.camera.width = this.camera.height * asp;
+   }
+
    addGameObject(obj: GameObject){
       this.gameObjects.push(obj);
       obj.scene = this;
@@ -65,5 +70,9 @@ export class Scene{
       if(!this.initialized) return;
 
       obj.destroy();
+   }
+
+   findObject(predicate: (component: GameObject) => boolean){
+      return this.gameObjects.find(predicate);
    }
 }
