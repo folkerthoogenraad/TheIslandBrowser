@@ -10,7 +10,7 @@ const config = {
   devtool: 'inline-source-map',
 
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'docs'),
     filename: 'bundle.js'
   },
 
@@ -92,8 +92,8 @@ const config = {
   },
   plugins: [
     new CopyWebpackPlugin([
-      { from: path.resolve(__dirname, 'src', 'html'), to: path.resolve(__dirname, 'dist')},
-      { from: path.resolve(__dirname, 'src', 'assets'), to: path.resolve(__dirname, 'dist', 'assets')},
+      { from: path.resolve(__dirname, 'src', 'html'), to: path.resolve(__dirname, 'docs')},
+      { from: path.resolve(__dirname, 'src', 'assets'), to: path.resolve(__dirname, 'docs', 'assets')},
       ]),
   ]
 };
