@@ -45,6 +45,10 @@ export class Vector2{
 
       return this;
    }
+   apply(x: number, y: number){
+      this.x = x;
+      this.y = y;
+   }
 
    normalize(){
       let length = this.length;

@@ -8,8 +8,18 @@ export class SpikesGameObject extends GameObject{
    transform: Transform;
    body: Rigidbody;
 
-   constructor(aabb: AABB){
+   constructor(aabb: AABB, shrink: boolean){
       super();
+
+      if(shrink){
+         let height = aabb.height;
+         let skin = aabb.height - 3;
+
+         if(skin > 0){
+            aabb.size.y -= skin;
+            aabb.position.y += skin;
+         }
+      }
 
       this.transform = this.addComponent(new Transform());
       this.transform.position.set(aabb.position);

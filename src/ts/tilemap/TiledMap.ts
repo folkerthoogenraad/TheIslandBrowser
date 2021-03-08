@@ -43,7 +43,15 @@ export interface TiledObject {
    name: string;
    type: string;
 
+   properties: TiledObjectProperties[];
+
    visible: boolean;
+}
+
+export interface TiledObjectProperties{
+   name: string;
+   type: string;
+   value: string|boolean|number;
 }
 
 export interface TiledTileset {

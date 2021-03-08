@@ -3,6 +3,7 @@ import { GamepadInput, Keyboard } from "engine/Input";
 import { Camera } from "graphics/Camera";
 import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
+import { ChestGameObject } from "island/GameObjects/ChestGameObject";
 import { ColliderGameObject } from "island/GameObjects/ColliderGameObject";
 import { LevelManager } from "island/GameObjects/LevelManager";
 import { PlayerFinishGameObject } from "island/GameObjects/PlayerFinishGameObject";
@@ -16,6 +17,7 @@ import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
 import { Scene } from "scene/Scene";
 import { TileMap } from "tilemap/TileMap";
+import List from "util/List";
 
 // Fuck this but whatever
 function initModal(element: HTMLElement){
@@ -45,8 +47,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
    
    let scene = new Scene();
 
-   scene.tilemap = await TileMap.fromTiledMapDownload("assets/levels/level0.json", (obj) => {
-      if(obj.type === "Collider"){
+   scene.tilemap = await TileMap.fromTiledMapDownload("assets/levels/level2.json", (obj) => {
+      if(obj.type === "Collider" || obj.type === "PlatformCollider"){
          scene.addGameObject(new ColliderGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
       }
       if(obj.type === "LevelManager"){
@@ -58,8 +60,14 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       if(obj.type === "PlayerFinish"){
          scene.addGameObject(new PlayerFinishGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)))
       }
+      if(obj.type === "Chest"){
+         scene.addGameObject(new ChestGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+      }
       if(obj.type === "Spikes"){
-         let spikes = new SpikesGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height));
+         let spikes = new SpikesGameObject(
+            AABB.Create(obj.x, obj.y, obj.width, obj.height), 
+            List.has(obj.properties, prop => { return prop.name === "shrink" && prop.value === true; })
+         );
 
          scene.addGameObject(spikes);
       }

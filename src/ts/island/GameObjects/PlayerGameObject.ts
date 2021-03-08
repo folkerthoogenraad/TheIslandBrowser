@@ -117,6 +117,12 @@ export class PlayerGameObject extends GameObject{
 
       if(cam.center.y - cam.height / 2 < 0) cam.center.y = cam.height / 2;
       if(cam.center.y + cam.height / 2 > sceneHeight) cam.center.y = sceneHeight - cam.height / 2;
+
+      let bounds = cam.getBounds();
+
+      if(!this.body.boundingBox.overlaps(bounds)){
+         this.health.damage(100);
+      }
    }
 
    fixedUpdate(delta: number){
@@ -187,10 +193,14 @@ export class PlayerGameObject extends GameObject{
       if(!this.canMove) return;
 
       if(this.input.direction !== 0){
+         let dir = Math.sign(this.input.direction);
+         let maxSpeed = this.moveSpeed * Math.abs(this.input.direction);
+         let acceleration = this.groundAcceleration * delta;
+
          this.accelerate(
-            Math.sign(this.input.direction), 
-            this.moveSpeed * Math.abs(this.input.direction),
-            this.groundAcceleration * delta);         
+            dir, 
+            maxSpeed,
+            acceleration);
       }
       else{
          this.stop(this.groundAcceleration * delta);
