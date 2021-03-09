@@ -1,9 +1,9 @@
 import { Sprite } from "./Sprite";
 
 export class Animation{
-   sprites: Sprite[] = [];
    frameRate: number = 12;
    
+   private sprites: Sprite[] = [];
    private _index: number = 0;
 
    update(delta: number){
@@ -29,5 +29,15 @@ export class Animation{
    }
    get frame(){
       return this.sprites[Math.floor(this.index)];
+   }
+
+   clone(){
+      let a =  new Animation();
+      
+      a._index = this._index;
+      a.frameRate = this.frameRate;
+      a.sprites = this.sprites;
+
+      return a;
    }
 }

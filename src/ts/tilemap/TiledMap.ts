@@ -1,3 +1,4 @@
+import { SpriteSheet } from "graphics/Sprite";
 
 export const TiledObjectLayerType = "objectgroup";
 export const TiledTileLayerType = "tilelayer";
@@ -54,6 +55,15 @@ export interface TiledObjectProperties{
    value: string|boolean|number;
 }
 
+export interface TiledAnimatedTiles{
+   id: number;
+   animation: TiledAnimatedTileFrame[];
+}
+export interface TiledAnimatedTileFrame{
+   duration: number,
+   tileid: number;
+}
+
 export interface TiledTileset {
    name: string;
 
@@ -65,4 +75,17 @@ export interface TiledTileset {
 
    tilewidth: number;
    tileheight: number;
+
+   tiles: TiledAnimatedTiles[]|undefined;
+}
+
+export function getSpriteFromTileset(tileset: TiledTileset, index: number, sheet: SpriteSheet){
+   let x = index % tileset.columns;
+   let y = Math.floor(index / tileset.columns);
+
+   return sheet.getSprite(
+      x * tileset.tilewidth, 
+      y * tileset.tileheight, 
+      tileset.tilewidth, 
+      tileset.tileheight);
 }

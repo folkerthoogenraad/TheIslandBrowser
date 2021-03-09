@@ -10,7 +10,7 @@ const config = {
   devtool: 'inline-source-map',
 
   output: {
-    path: path.resolve(__dirname, 'docs'),
+    path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js'
   },
 
@@ -22,9 +22,9 @@ const config = {
         exclude: /node_modules/
       },
       {
-        test: /\.tsx?$/,
+        test: /\.ts$/,
         use: 'ts-loader',
-        exclude: /node_modules/,
+        exclude: /(node_modules)/,
       },
       {
         test: /\.scss$/,
@@ -37,13 +37,13 @@ const config = {
     ]
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ],
+    extensions: [ '.ts', '.js' ],
     plugins: [new TsconfigPathsPlugin({})]
   },
   plugins: [
     new CopyWebpackPlugin([
-      { from: path.resolve(__dirname, 'src', 'html'), to: path.resolve(__dirname, 'docs')},
-      { from: path.resolve(__dirname, 'src', 'assets'), to: path.resolve(__dirname, 'docs', 'assets')},
+      { from: path.resolve(__dirname, 'src', 'html'), to: path.resolve(__dirname, 'dist')},
+      { from: path.resolve(__dirname, 'src', 'assets'), to: path.resolve(__dirname, 'dist', 'assets')},
       ]),
   ]
 };

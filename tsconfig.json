@@ -6,6 +6,11 @@
      "module": "commonjs",
      "target": "es5",
      "baseUrl": "src/ts",
-     "strict": true
-   }
+     "strict": true,
+     "sourceRoot": "src/ts",
+     "rootDir": "src/ts"
+   },
+   "exclude": [
+     "src/tiled/*"
+   ]
  }

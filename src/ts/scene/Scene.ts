@@ -33,6 +33,7 @@ export class Scene{
    }
 
    update(delta: number){
+      this.tilemap?.update(delta);
       this.gameObjects.forEach(obj => obj.update(delta));
    }
    fixedUpdate(delta: number){

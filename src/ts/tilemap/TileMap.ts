@@ -1,13 +1,14 @@
+import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
-import { TiledMap, TiledObject, TiledObjectLayer, TiledObjectLayerType, TiledTileLayer, TiledTileLayerType, TiledTileset } from "./TiledMap";
+import { getSpriteFromTileset, TiledMap, TiledObject, TiledObjectLayer, TiledObjectLayerType, TiledTileLayer, TiledTileLayerType, TiledTileset } from "./TiledMap";
 
 type TilemapObjectLoader = (object: TiledObject) => void;
 
 export class TilemapLayer{
    width: number;
    height: number;
-   tiles: (Sprite|undefined)[];
+   tiles: (Animation|undefined)[];
 
    constructor(width: number, height: number){
       this.width = width;
@@ -22,11 +23,22 @@ export class TilemapLayer{
    getTile(x: number, y: number){
       return this.tiles[x + y * this.width];
    }
-   setTile(x: number, y: number, sprite: Sprite){
-      this.tiles[x + y * this.width] = sprite;
+   setTile(x: number, y: number, animation: Animation){
+      this.tiles[x + y * this.width] = animation;
    }
-   setTileFromIndex(index: number, sprite: Sprite){
-      this.tiles[index] = sprite;
+   setTileFromIndex(index: number, animation: Animation){
+      this.tiles[index] = animation;
+   }
+
+   update(delta: number){
+      for(let x = 0; x < this.width; x++){
+         for(let y = 0; y < this.height; y++){
+            let tile = this.getTile(x, y);
+            if(tile === undefined) continue;
+
+            tile.update(delta);
+         }
+      }
    }
    
    draw(graphics: Graphics, tileWidth: number, tileHeight: number){
@@ -35,7 +47,7 @@ export class TilemapLayer{
             let tile = this.getTile(x, y);
             if(tile === undefined) continue;
 
-            graphics.drawSpriteSimple(tile, x * tileWidth, y * tileHeight);
+            graphics.drawSpriteSimple(tile.frame, x * tileWidth, y * tileHeight);
          }
       }
    }
@@ -66,6 +78,11 @@ export class TileMap {
       this.layers.forEach(layer => layer.draw(graphics, this.tileWidth, this.tileHeight));
    }
 
+   // TODO maybe more like batch update every x frames or devide up the work somehow over muptiple frames
+   update(delta: number){      
+      this.layers.forEach(layer => layer.update(delta));
+   }
+
    public static fromTiledMap(map: TiledMap, loader: TilemapObjectLoader){
       let tilemap = new TileMap(map.width, map.height, map.tilewidth, map.tileheight);
 
@@ -73,12 +90,28 @@ export class TileMap {
       
       // TILESETS
       let tilesets: {set: TiledTileset, sheet: SpriteSheet}[] = [];
-      let tiles: { [key: number]: Sprite } = {};
+      let tiles: { [key: number]: Animation } = {};
       
       map.tilesets.forEach(set => {
+         let sheet = SpriteSheet.fromHTML(set.name);
          tilesets.push({
-            set: set,
-            sheet: SpriteSheet.fromHTML(set.name)
+            set,
+            sheet
+         });
+
+         // Load all default animations
+         set.tiles?.forEach(tile => {
+            let index = tile.id + set.firstgid;
+
+            let animation =  new Animation();
+
+            tile.animation.forEach(frame => {
+               animation.addFrame(getSpriteFromTileset(set, frame.tileid, sheet));
+            });
+
+            animation.frameRate = 4;
+
+            tiles[index] = animation;
          });
       });
 
@@ -102,21 +135,18 @@ export class TileMap {
                      let tileset = tilesets[j];
 
                      if(tileIndex >= tileset.set.firstgid && tileIndex < tileset.set.firstgid + tileset.set.tilecount){
-                        let ii = tileIndex - tileset.set.firstgid;
-                        let x = ii % tileset.set.columns;
-                        let y = Math.floor(ii / tileset.set.columns);
+                        let sprite = getSpriteFromTileset(tileset.set, tileIndex - tileset.set.firstgid, tileset.sheet);
 
-                        tile = tileset.sheet.getSprite(
-                           x * tileset.set.tilewidth, 
-                           y * tileset.set.tileheight, 
-                           tileset.set.tilewidth, 
-                           tileset.set.tileheight);
+                        tile = new Animation();
+                        tile.addFrame(sprite);
                      }
                   }
                   tiles[tileIndex] = tile;
                }
 
-               tilemapLayer.setTileFromIndex(i, tile);
+               if(tile !== undefined){
+                  tilemapLayer.setTileFromIndex(i, tile.clone());
+               }
             }
 
             tilemap.layers.push(tilemapLayer);

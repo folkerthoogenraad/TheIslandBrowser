@@ -1,14 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.2" tiledversion="1.2.3" orientation="orthogonal" renderorder="right-down" width="40" height="23" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#b4e9ff" nextlayerid="15" nextobjectid="81">
- <tileset firstgid="1" name="TilesetForest" tilewidth="16" tileheight="16" tilecount="128" columns="16">
-  <image source="../assets/tilemaps/TilesetForest.png" width="256" height="128"/>
- </tileset>
- <tileset firstgid="129" name="TilesetTrees" tilewidth="16" tileheight="16" tilecount="256" columns="16">
-  <image source="../assets/tilemaps/TilesetTrees.png" width="256" height="256"/>
- </tileset>
- <tileset firstgid="385" name="TilesetDocks" tilewidth="16" tileheight="16" tilecount="128" columns="16">
-  <image source="../assets/tilemaps/TilesetDocks.png" width="256" height="128"/>
- </tileset>
+ <tileset firstgid="1" source="tilesets/TilesetForest.tsx"/>
+ <tileset firstgid="129" source="tilesets/TilesetTrees.tsx"/>
+ <tileset firstgid="385" source="tilesets/TilesetDocks.tsx"/>
  <layer id="8" name="BackgroundLayer" width="40" height="23">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
