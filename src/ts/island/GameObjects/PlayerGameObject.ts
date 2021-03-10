@@ -5,6 +5,7 @@ import { HealthComponent } from "island/Components/HealthComponent";
 import { InteractableComponent } from "island/Components/InteractableComponent";
 import { InteractorComponent } from "island/Components/InteractorComponent";
 import { PlayerInputComponent } from "island/Components/PlayerInputComponent";
+import { AABB } from "math/AABB";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
@@ -111,21 +112,12 @@ export class PlayerGameObject extends GameObject{
       if(this.input.interactPressed){
          this.interactor.interact();
       }
-
-      let cam = this.scene.camera;
-      cam.center.set(this.transform.interpolatedPosition);
-
+      
       // TODO do this right.
-      const sceneWidth = 640;
-      const sceneHeight = 360;
+      const sceneWidth = this.scene.tilemap!.pixelWidth;
+      const sceneHeight = this.scene.tilemap!.pixelHeight;
 
-      if(cam.center.x - cam.width / 2 < 0) cam.center.x = cam.width / 2;
-      if(cam.center.x + cam.width / 2 > sceneWidth) cam.center.x = sceneWidth - cam.width / 2;
-
-      if(cam.center.y - cam.height / 2 < 0) cam.center.y = cam.height / 2;
-      if(cam.center.y + cam.height / 2 > sceneHeight) cam.center.y = sceneHeight - cam.height / 2;
-
-      let bounds = cam.getBounds();
+      let bounds = AABB.Create(0, 0, sceneWidth, sceneHeight);
 
       if(!this.body.boundingBox.overlaps(bounds)){
          this.health.damage(100);

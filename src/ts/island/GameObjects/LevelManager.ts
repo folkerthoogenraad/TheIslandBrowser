@@ -2,6 +2,7 @@ import { Game } from "engine/Game";
 import { GamepadInput, Keyboard } from "engine/Input";
 import { HealthComponent } from "island/Components/HealthComponent";
 import { AABB } from "math/AABB";
+import { Vector2 } from "math/Vector2";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
@@ -81,6 +82,7 @@ export class LevelManager extends GameObject{
          }
       }
 
+      this.updateCamera(delta);
    }
 
    fixedUpdate(delta: number){
@@ -120,7 +122,7 @@ export class LevelManager extends GameObject{
       this.player = new PlayerGameObject();
 
       this.player.transform.position.set(this.spawn.transform.position);
-      this.player.transform.interpolatedPosition.set(this.spawn.transform.position);
+      this.player.body.previousPosition.set(this.spawn.transform.position);
       
       this.scene.addGameObject(this.player);
       
@@ -135,5 +137,41 @@ export class LevelManager extends GameObject{
       if(this.bestTime !== undefined){
          this.bestTimeElement.innerText = format(this.bestTime);
       }
+   }
+
+   updateCamera(delta: number){
+      if(!this.player) return;
+
+      const position = this.player.transform.interpolatedPosition;
+
+      const sceneWidth = this.scene.tilemap!.pixelWidth;
+      const sceneHeight = this.scene.tilemap!.pixelHeight;
+
+      const screenWidth = 640;
+      const screenHeight = 360;
+
+      const cam = this.scene.camera;
+
+      const screenIndexX = Math.floor(position.x / screenWidth);
+      const screenIndexY = Math.floor(position.y / screenHeight);
+
+      const offsetX = screenIndexX * screenWidth;
+      const offsetY = screenIndexY * screenHeight;
+
+      let wantedPosition = new Vector2(
+         offsetX + screenWidth / 2,
+         offsetY + screenHeight / 2,
+      );
+
+      cam.center.lerpTo(wantedPosition, delta * 7);
+      
+
+      // Clamp the camera in the scene
+      if(cam.center.x - cam.width / 2 < 0) cam.center.x = cam.width / 2;
+      if(cam.center.x + cam.width / 2 > sceneWidth) cam.center.x = sceneWidth - cam.width / 2;
+
+      if(cam.center.y - cam.height / 2 < 0) cam.center.y = cam.height / 2;
+      if(cam.center.y + cam.height / 2 > sceneHeight) cam.center.y = sceneHeight - cam.height / 2;
+
    }
 }

@@ -95,6 +95,10 @@ export class Vector2{
       return Math.sqrt(distX * distX + distY * distY);
    }
 
+   lerpTo(other: Vector2, f: number){
+      return Vector2.lerpOut(this, other, this, f);
+   }
+
    static lerp(a: Vector2, b: Vector2, f: number){
       return this.lerpOut(a, b, new Vector2(), f);
    }

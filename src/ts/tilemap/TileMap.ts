@@ -122,6 +122,10 @@ export class TileMap {
          if(layer.type === TiledTileLayerType){
             let tileLayer = layer as TiledTileLayer;
 
+            if(!layer.visible){
+               return;
+            }
+
             let tilemapLayer = new TilemapLayer(tileLayer.width, tileLayer.height);
 
             for(let i = 0; i < tileLayer.data.length; i++){
@@ -169,5 +173,12 @@ export class TileMap {
       let d = await result.json();
 
       return this.fromTiledMap(d as TiledMap, loader);
+   }
+
+   get pixelWidth(){
+      return this.width * this.tileWidth;
+   }
+   get pixelHeight(){
+      return this.height * this.tileHeight;
    }
 }
