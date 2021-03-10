@@ -7,6 +7,7 @@ export class Signal<T>{
 
    listen(func: (type: T) => void){
       this.functions.push(func);
+      return func;
    }
    remove(func: (type: T) => void){
       let index = this.functions.indexOf(func);

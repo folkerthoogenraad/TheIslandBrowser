@@ -102,6 +102,7 @@ export class Keyboard{
    public static readonly KeySpace : Key = " ";
 
    public static readonly KeyC : Key = "c";
+   public static readonly KeyX : Key = "x";
    
    public static readonly KeyArrowUp : Key = "ArrowUp";
    public static readonly KeyArrowDown : Key = "ArrowDown";

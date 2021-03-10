@@ -36,6 +36,10 @@ export class Rigidbody extends Component{
       this.game.physics.removeBody(this);
    }
 
+   collides(other: Rigidbody){
+      return other.boundingBox.overlaps(this.boundingBox);
+   }
+
    get boundingBox(){
       this.localAABB.position.set(this.transform.position);
       return this.localAABB;

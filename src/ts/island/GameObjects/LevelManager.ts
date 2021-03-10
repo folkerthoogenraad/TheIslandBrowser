@@ -45,8 +45,8 @@ export class LevelManager extends GameObject{
       this.spawn = this.scene.findObject(object => object instanceof PlayerSpawnGameObject) as PlayerSpawnGameObject|undefined;
       this.finish = this.scene.findObject(object => object instanceof PlayerFinishGameObject) as PlayerFinishGameObject|undefined;
 
-      this.finish!.body.onCollision.listen(other => {
-         if(other.gameObject instanceof PlayerGameObject){
+      this.finish!.interactable.onInteract.listen(interactor => {
+         if(interactor.gameObject instanceof PlayerGameObject){
             this.completed = true;
             this.stop();
          }

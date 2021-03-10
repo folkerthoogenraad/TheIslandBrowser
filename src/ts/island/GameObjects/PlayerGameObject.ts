@@ -2,6 +2,8 @@ import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { HealthComponent } from "island/Components/HealthComponent";
+import { InteractableComponent } from "island/Components/InteractableComponent";
+import { InteractorComponent } from "island/Components/InteractorComponent";
 import { PlayerInputComponent } from "island/Components/PlayerInputComponent";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
@@ -23,6 +25,7 @@ export class PlayerGameObject extends GameObject{
    body: Rigidbody;
    input: PlayerInputComponent;
    health: HealthComponent;
+   interactor: InteractorComponent;
    
    jumpHop: boolean = false;
    dashHop: boolean = false;
@@ -84,6 +87,7 @@ export class PlayerGameObject extends GameObject{
       this.body = this.addComponent(new Rigidbody());
       this.input = this.addComponent(new PlayerInputComponent());
       this.health = this.addComponent(new HealthComponent());
+      this.interactor = this.addComponent(new InteractorComponent());
 
       this.health.onDeath.listen(this.onDeath.bind(this));
       
@@ -103,6 +107,9 @@ export class PlayerGameObject extends GameObject{
       }
       if(this.input.dashPressed){
          this.dashHop = true;
+      }
+      if(this.input.interactPressed){
+         this.interactor.interact();
       }
 
       let cam = this.scene.camera;
