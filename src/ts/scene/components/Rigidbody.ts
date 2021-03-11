@@ -28,12 +28,12 @@ export class Rigidbody extends Component{
    init(game: Game){
       super.init(game);
 
-      this.game.physics.addBody(this);
+      this.scene.physics.addBody(this);
       this.transform = this.gameObject.findComponent(c => c instanceof Transform) as Transform;
    }
 
    destroy(){
-      this.game.physics.removeBody(this);
+      this.scene.physics.removeBody(this);
    }
 
    collides(other: Rigidbody){

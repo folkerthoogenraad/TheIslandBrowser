@@ -1,6 +1,7 @@
 import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
+import { AABB } from "math/AABB";
 import { getSpriteFromTileset, TiledMap, TiledObject, TiledObjectLayer, TiledObjectLayerType, TiledTileLayer, TiledTileLayerType, TiledTileset } from "./TiledMap";
 
 type TilemapObjectLoader = (object: TiledObject) => void;
@@ -30,9 +31,15 @@ export class TilemapLayer{
       this.tiles[index] = animation;
    }
 
-   update(delta: number){
-      for(let x = 0; x < this.width; x++){
-         for(let y = 0; y < this.height; y++){
+   update(delta: number, tileWidth: number, tileHeight: number, bounds: AABB){
+      let startX = Math.floor(Math.max(0, bounds.left / tileWidth));
+      let endX = Math.floor(Math.min(this.width, bounds.right / tileWidth + 1));
+
+      let startY = Math.floor(Math.max(0, bounds.top / tileHeight));
+      let endY = Math.floor(Math.min(this.height, bounds.bottom / tileHeight + 1));
+      
+      for(let x = startX; x < endX; x++){
+         for(let y = startY; y < endY; y++){
             let tile = this.getTile(x, y);
             if(tile === undefined) continue;
 
@@ -41,9 +48,15 @@ export class TilemapLayer{
       }
    }
    
-   draw(graphics: Graphics, tileWidth: number, tileHeight: number){
-      for(let x = 0; x < this.width; x++){
-         for(let y = 0; y < this.height; y++){
+   draw(graphics: Graphics, tileWidth: number, tileHeight: number, bounds: AABB){
+      let startX = Math.floor(Math.max(0, bounds.left / tileWidth));
+      let endX = Math.floor(Math.min(this.width, bounds.right / tileWidth + 1));
+
+      let startY = Math.floor(Math.max(0, bounds.top / tileHeight));
+      let endY = Math.floor(Math.min(this.height, bounds.bottom / tileHeight + 1));
+
+      for(let x = startX; x < endX; x++){
+         for(let y = startY; y < endY; y++){
             let tile = this.getTile(x, y);
             if(tile === undefined) continue;
 
@@ -71,16 +84,16 @@ export class TileMap {
       this.layers = [];
    }
 
-   draw(graphics: Graphics){
+   draw(graphics: Graphics, bounds: AABB){
       graphics.setColor(this.backgroundColor);
       graphics.drawRectangle(0, 0, this.width * this.tileWidth, this.height * this.tileHeight, true);
       
-      this.layers.forEach(layer => layer.draw(graphics, this.tileWidth, this.tileHeight));
+      this.layers.forEach(layer => layer.draw(graphics, this.tileWidth, this.tileHeight, bounds));
    }
 
    // TODO maybe more like batch update every x frames or devide up the work somehow over muptiple frames
-   update(delta: number){      
-      this.layers.forEach(layer => layer.update(delta));
+   update(delta: number, bounds: AABB){      
+      this.layers.forEach(layer => layer.update(delta, this.tileWidth, this.tileHeight, bounds));
    }
 
    public static fromTiledMap(map: TiledMap, loader: TilemapObjectLoader){

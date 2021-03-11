@@ -45,6 +45,8 @@ export class PlayerGameObject extends GameObject{
    gravityUpFraction: number = 0.5;
    gravityWallFraction: number = 0.4;
 
+   maxFallSpeed = 5 * 60;
+
    grounded: boolean = false;
    wallLeft: boolean = false;
    wallRight: boolean = false;
@@ -173,6 +175,10 @@ export class PlayerGameObject extends GameObject{
 
       // Gravity
       this.updateGravity(delta);
+
+      if(this.body.velocity.y > this.maxFallSpeed){
+         this.body.velocity.y = this.maxFallSpeed;
+      }
       
       // Animation
       this.updateAnimation(delta);

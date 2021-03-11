@@ -1,4 +1,5 @@
 import { Game } from "engine/Game";
+import { Physics } from "engine/Physics";
 import { Camera } from "graphics/Camera";
 import { Graphics } from "graphics/Graphics";
 import { TileMap } from "tilemap/TileMap";
@@ -10,11 +11,17 @@ export class Scene{
    game!: Game;
    tilemap?: TileMap;
 
+   physics: Physics;
+
+   // This gets used for transitions :)
+   paused: boolean = false;
+
    initialized: boolean = false;
 
    constructor(){
       this.camera = new Camera();
       this.gameObjects = [];
+      this.physics = new Physics();
    }
 
    init(game: Game){
@@ -33,18 +40,23 @@ export class Scene{
    }
 
    update(delta: number){
-      this.tilemap?.update(delta);
-      this.gameObjects.forEach(obj => obj.update(delta));
+      if(!this.paused) this.tilemap?.update(delta, this.camera.getBounds());
+      
+      this.gameObjects.forEach(obj => { if(!this.paused || obj.alwaysUpdate) obj.update(delta); });
+      
+      if(!this.paused) this.physics.update(delta);
    }
    fixedUpdate(delta: number){
-      this.gameObjects.forEach(obj => obj.fixedUpdate(delta));
+      this.gameObjects.forEach(obj => { if(!this.paused || obj.alwaysUpdate) obj.fixedUpdate(delta); });
+      if(!this.paused) this.physics.fixedUpdate(delta);
    }
 
    draw(graphics: Graphics){
       graphics.setCamera(this.camera);
 
-      this.tilemap?.draw(graphics);
+      this.tilemap?.draw(graphics, this.camera.getBounds());
       this.gameObjects.forEach(obj => obj.draw(graphics));
+      this.physics.drawDebug(graphics);
    }
 
    updateSize(){

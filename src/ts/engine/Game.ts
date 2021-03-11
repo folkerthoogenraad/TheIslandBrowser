@@ -16,13 +16,11 @@ export class Game{
    scene?: Scene;
    graphics: Graphics;
    input: Input;
-   physics: Physics;
    canvas: HTMLCanvasElement;
 
    constructor(canvas: HTMLCanvasElement){
       this.graphics = new Graphics(canvas);
       this.input = new Input(canvas);
-      this.physics = new Physics();
       this.canvas = canvas;
 
       window.addEventListener("resize", () => this.updateSize());
@@ -62,16 +60,13 @@ export class Game{
       while(this.interUpdateTime > this.fixedUpdateTime){
          this.interUpdateTime -= this.fixedUpdateTime;
          this.scene?.fixedUpdate(this.fixedUpdateTime);
-         this.physics.fixedUpdate(this.fixedUpdateTime);
       }
       this.scene?.update(delta);
-      this.physics.update(delta);
 
       this.graphics.reset();
       this.graphics.clearScreen();
 
       this.scene?.draw(this.graphics);
-      this.physics.drawDebug(this.graphics);
 
       this.input.flush();
    }

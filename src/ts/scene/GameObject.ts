@@ -9,6 +9,8 @@ export class GameObject {
 
    game!: Game;
    initialized: boolean = false;
+   
+   alwaysUpdate: boolean = false;
 
    constructor(){
       this.components = [];

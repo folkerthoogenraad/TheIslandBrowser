@@ -1,5 +1,5 @@
+import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
-import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { InteractableComponent } from "island/Components/InteractableComponent";
 import { InteractorComponent } from "island/Components/InteractorComponent";
 import Resources from "island/Resources";
@@ -8,15 +8,16 @@ import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
 
-export class ChestGameObject extends GameObject{
+
+export class PlayerCheckpointGameObject extends GameObject{
    transform: Transform;
    body: Rigidbody;
    interactable: InteractableComponent;
 
-   closed: Sprite;
-   open: Sprite;
+   currentAnimation: Animation;
 
-   isOpen: boolean = false;
+   closedAnimation: Animation;
+   openAnimation: Animation;
 
    constructor(aabb: AABB){
       super();
@@ -29,18 +30,25 @@ export class ChestGameObject extends GameObject{
 
       this.interactable.onInteract.listen(this.onInteract.bind(this));
 
-      this.body.localAABB = aabb;
+      // Interactables and shit
       this.body.useDynamicCollisions = true;
+      this.body.localAABB = aabb;
 
-      this.closed = Resources.sheetObjects.getSprite(0, 64, 16, 16);
-      this.open = Resources.sheetObjects.getSprite(16, 64, 16, 16);
+      this.closedAnimation = Resources.sheetObjects.getAnimation(0, 112, 16, 16, 1);
+      this.openAnimation = Resources.sheetObjects.getAnimation(16, 112, 16, 16, 2);
+
+      this.currentAnimation = this.closedAnimation;
+   }
+
+   update(delta: number){
+      this.currentAnimation.update(delta);
    }
 
    onInteract(interactor: InteractorComponent){
-      this.isOpen = !this.isOpen;
+      this.currentAnimation = this.openAnimation;
    }
-
+   
    draw(graphics: Graphics){
-      graphics.drawSpriteSimple(this.isOpen ? this.open : this.closed, this.transform.position.x, this.transform.position.y);
+      graphics.drawSpriteSimple(this.currentAnimation.frame, this.transform.position.x, this.transform.position.y);
    }
 }

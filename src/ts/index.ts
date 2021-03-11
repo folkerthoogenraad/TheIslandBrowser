@@ -6,6 +6,7 @@ import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { ChestGameObject } from "island/GameObjects/ChestGameObject";
 import { ColliderGameObject } from "island/GameObjects/ColliderGameObject";
 import { LevelManager } from "island/GameObjects/LevelManager";
+import { PlayerCheckpointGameObject } from "island/GameObjects/PlayerCheckpointGameObject";
 import { PlayerFinishGameObject } from "island/GameObjects/PlayerFinishGameObject";
 import { PlayerGameObject } from "island/GameObjects/PlayerGameObject";
 import { PlayerSpawnGameObject } from "island/GameObjects/PlayerSpawnGameObject";
@@ -47,7 +48,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
    
    let scene = new Scene();
 
-   scene.tilemap = await TileMap.fromTiledMapDownload("assets/levels/level3.json", (obj) => {
+   scene.tilemap = await TileMap.fromTiledMapDownload("assets/levels/level4.json", (obj) => {
       if(obj.type === "Collider" || obj.type === "PlatformCollider"){
          scene.addGameObject(new ColliderGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
       }
@@ -56,6 +57,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       }
       if(obj.type === "PlayerSpawn"){
          scene.addGameObject(new PlayerSpawnGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)))
+      }
+      if(obj.type === "Checkpoint"){
+         scene.addGameObject(new PlayerCheckpointGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)))
       }
       if(obj.type === "PlayerFinish"){
          scene.addGameObject(new PlayerFinishGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)))

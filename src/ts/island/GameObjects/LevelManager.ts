@@ -7,6 +7,7 @@ import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
 import { format } from "util/Time";
+import { PlayerCheckpointGameObject } from "./PlayerCheckpointGameObject";
 import { PlayerFinishGameObject } from "./PlayerFinishGameObject";
 import { PlayerGameObject } from "./PlayerGameObject";
 import { PlayerSpawnGameObject } from "./PlayerSpawnGameObject";
@@ -16,6 +17,9 @@ export class LevelManager extends GameObject{
    finish?: PlayerFinishGameObject;
 
    player?: PlayerGameObject;
+   checkpoints: PlayerCheckpointGameObject[];
+
+   currentCheckpoint?: PlayerCheckpointGameObject;
 
    running: boolean = false;
    completed: boolean = false;
@@ -34,6 +38,10 @@ export class LevelManager extends GameObject{
       this.finalTimeElement = document.getElementById("final-time") as HTMLElement;
       this.bestTimeElement = document.getElementById("best-time") as HTMLElement;
 
+      this.alwaysUpdate = true;
+
+      this.checkpoints = [];
+
       let bt = localStorage.getItem("bestTime");
       if(bt !== null){
          this.bestTime = parseFloat(bt);
@@ -50,6 +58,16 @@ export class LevelManager extends GameObject{
          if(interactor.gameObject instanceof PlayerGameObject){
             this.completed = true;
             this.stop();
+         }
+      });
+
+      this.scene.gameObjects.forEach(obj => {
+         if(obj instanceof PlayerCheckpointGameObject){
+            this.checkpoints.push(obj);
+
+            obj.interactable.onInteract.listen(interactor => {
+               this.currentCheckpoint = obj;
+            });
          }
       });
 
@@ -121,8 +139,14 @@ export class LevelManager extends GameObject{
 
       this.player = new PlayerGameObject();
 
-      this.player.transform.position.set(this.spawn.transform.position);
-      this.player.body.previousPosition.set(this.spawn.transform.position);
+      let position = this.spawn.transform.position;
+
+      if(this.currentCheckpoint !== undefined){
+         position = this.currentCheckpoint.transform.position;
+      }
+
+      this.player.transform.position.set(position);
+      this.player.body.previousPosition.set(position);
       
       this.scene.addGameObject(this.player);
       
@@ -147,8 +171,8 @@ export class LevelManager extends GameObject{
       const sceneWidth = this.scene.tilemap!.pixelWidth;
       const sceneHeight = this.scene.tilemap!.pixelHeight;
 
-      const screenWidth = 640;
-      const screenHeight = 360;
+      const screenWidth = 40 * 16;
+      const screenHeight = 23 * 16;
 
       const cam = this.scene.camera;
 
@@ -162,16 +186,16 @@ export class LevelManager extends GameObject{
          offsetX + screenWidth / 2,
          offsetY + screenHeight / 2,
       );
+      
+      // Clamp the wanted position to the scene... Not great, for reasons (like, edge cases, but we don't care :) )
+      if(wantedPosition.x - cam.width / 2 < 0) wantedPosition.x = cam.width / 2;
+      if(wantedPosition.x + cam.width / 2 > sceneWidth) wantedPosition.x = sceneWidth - cam.width / 2;
+
+      if(wantedPosition.y - cam.height / 2 < 0) wantedPosition.y = cam.height / 2;
+      if(wantedPosition.y + cam.height / 2 > sceneHeight) wantedPosition.y = sceneHeight - cam.height / 2;
+
+      this.scene.paused = Vector2.distance(wantedPosition, cam.center) > 1;
 
       cam.center.lerpTo(wantedPosition, delta * 7);
-      
-
-      // Clamp the camera in the scene
-      if(cam.center.x - cam.width / 2 < 0) cam.center.x = cam.width / 2;
-      if(cam.center.x + cam.width / 2 > sceneWidth) cam.center.x = sceneWidth - cam.width / 2;
-
-      if(cam.center.y - cam.height / 2 < 0) cam.center.y = cam.height / 2;
-      if(cam.center.y + cam.height / 2 > sceneHeight) cam.center.y = sceneHeight - cam.height / 2;
-
    }
 }

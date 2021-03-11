@@ -21,4 +21,8 @@ export class Component{
 
    draw(graphics: Graphics){
    }
+
+   get scene(){
+      return this.gameObject.scene;
+   }
 }
