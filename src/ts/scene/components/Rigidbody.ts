@@ -21,6 +21,7 @@ export class Rigidbody extends Component{
    collidedTop: boolean = false;
    collidedBottom: boolean = false;
 
+   kinematic: boolean = false;
    solid: boolean = false;
    useDynamicCollisions: boolean = false;
 

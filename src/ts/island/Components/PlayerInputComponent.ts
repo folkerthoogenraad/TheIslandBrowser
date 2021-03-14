@@ -47,5 +47,13 @@ export class PlayerInputComponent extends Component{
 
       if(this.game.input.keyboard.isKeyDown(Keyboard.KeyArrowLeft)) this.direction = -1;
       if(this.game.input.keyboard.isKeyDown(Keyboard.KeyArrowRight)) this.direction = 1;
+      
+      if(this.game.input.keyboard.isKeyDown(Keyboard.KeyA)) this.direction = -1;
+      if(this.game.input.keyboard.isKeyDown(Keyboard.KeyD)) this.direction = 1;
+      
+      if(this.game.input.keyboard.isKeyPressed(Keyboard.KeyComma)) this.jumpPressed = true;
+      if(this.game.input.keyboard.isKeyDown(Keyboard.KeyComma)) this.jumpDown = true;
+      if(this.game.input.keyboard.isKeyPressed(Keyboard.KeyPeriod)) this.dashPressed = true;
+      if(this.game.input.keyboard.isKeyPressed(Keyboard.KeySlash)) this.interactPressed = true;
    }
 }

@@ -98,6 +98,12 @@ export class LevelManager extends GameObject{
          if(this.game.input.keyboard.isKeyPressed(Keyboard.KeyEnter)){
             this.restart();
          }
+         if(this.game.input.keyboard.isKeyPressed(Keyboard.KeyComma)){
+            this.restart();
+         }
+         if(this.game.input.keyboard.isKeyPressed(Keyboard.KeySpace)){
+            this.restart();
+         }
       }
 
       this.updateCamera(delta);

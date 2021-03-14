@@ -6,14 +6,13 @@ import { HealthComponent } from "island/Components/HealthComponent";
 import { InteractableComponent } from "island/Components/InteractableComponent";
 import { InteractorComponent } from "island/Components/InteractorComponent";
 import { PlayerInputComponent } from "island/Components/PlayerInputComponent";
+import Resources from "island/Resources";
 import { AABB } from "math/AABB";
 import { BoxCollider } from "math/collision/BoxCollider";
 import { Vector2 } from "math/Vector2";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
-
-let sheet = SpriteSheet.fromHTML("Player");
 
 export class PlayerGameObject extends GameObject{
    currentAnimation: Animation;
@@ -79,6 +78,8 @@ export class PlayerGameObject extends GameObject{
 
    constructor(){
       super();
+
+      let sheet = Resources.sheetPlayer;
 
       this.idleAnimation = sheet.getAnimation(0, 0, 16, 16, 1).center();
       this.walkAnimation = sheet.getAnimation(0, 16, 16, 16, 4).center();

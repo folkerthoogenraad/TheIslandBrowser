@@ -24,6 +24,7 @@ export class SpikesGameObject extends GameObject{
       this.transform.position.apply(aabb.x, aabb.y);
       
       this.body = this.addComponent(new Rigidbody());
+      this.body.kinematic = true;
 
       this.body.useDynamicCollisions = true;
       this.body.collider = BoxCollider.fromAABB(aabb);

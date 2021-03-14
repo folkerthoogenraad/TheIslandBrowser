@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.2.3" orientation="orthogonal" renderorder="right-down" width="3" height="4" tilewidth="16" tileheight="16" infinite="0" nextlayerid="24" nextobjectid="1">
+ <properties>
+  <property name="AutoMappingRadius" type="int" value="2"/>
+  <property name="DeleteTiles" type="bool" value="true"/>
+  <property name="MatchOutsideMap" type="bool" value="true"/>
+ </properties>
+ <tileset firstgid="1" source="tilesets/TilesetForest.tsx"/>
+ <tileset firstgid="129" source="tilesets/TilesetDocks.tsx"/>
+ <layer id="21" name="regions" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,26,0,
+0,26,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="22" name="input_Colliders" width="3" height="4" opacity="0.5">
+  <properties>
+   <property name="StrictEmpty" type="bool" value="true"/>
+  </properties>
+  <data encoding="csv">
+0,0,0,
+0,18,0,
+0,8,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="23" name="output_Docks" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,0,0,
+0,194,0,
+0,0,0
+</data>
+ </layer>
+</map>

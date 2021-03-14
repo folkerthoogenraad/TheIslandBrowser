@@ -36,7 +36,7 @@ export class PlayerCheckpointGameObject extends GameObject{
       this.body.collider = BoxCollider.fromAABB(aabb);
 
       this.closedAnimation = Resources.sheetObjects.getAnimation(0, 112, 16, 16, 1);
-      this.openAnimation = Resources.sheetObjects.getAnimation(16, 112, 16, 16, 2);
+      this.openAnimation = Resources.sheetObjects.getAnimation(16, 112, 16, 16, 4);
 
       this.currentAnimation = this.closedAnimation;
    }

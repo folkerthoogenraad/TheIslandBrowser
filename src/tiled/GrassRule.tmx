@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.2.3" orientation="orthogonal" renderorder="right-down" width="3" height="4" tilewidth="16" tileheight="16" infinite="0" nextlayerid="42" nextobjectid="1">
+ <properties>
+  <property name="AutoMappingRadius" type="int" value="2"/>
+  <property name="DeleteTiles" type="bool" value="true"/>
+  <property name="MatchOutsideMap" type="bool" value="true"/>
+ </properties>
+ <tileset firstgid="1" source="tilesets/TilesetForest.tsx"/>
+ <tileset firstgid="129" source="tilesets/TilesetDocks.tsx"/>
+ <layer id="30" name="regions" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,26,0,
+0,26,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="31" name="input_Colliders" width="3" height="4" opacity="0.5">
+  <properties>
+   <property name="StrictEmpty" type="bool" value="true"/>
+  </properties>
+  <data encoding="csv">
+0,0,0,
+0,0,0,
+0,18,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="32" name="output0_Grass" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,101,0,
+0,0,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="33" name="output1_Grass" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,102,0,
+0,0,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="34" name="output2_Grass" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,103,0,
+0,0,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="35" name="output3_Grass" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,104,0,
+0,0,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="36" name="output4_Grass" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,117,0,
+0,0,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="37" name="output5_Grass" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,118,0,
+0,0,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="38" name="output6_Grass" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,119,0,
+0,0,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="39" name="output7_Grass" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,120,0,
+0,0,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="40" name="output8_Grass" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,87,0,
+0,0,0,
+0,0,0
+</data>
+ </layer>
+ <layer id="41" name="output9_Grass" width="3" height="4">
+  <data encoding="csv">
+0,0,0,
+0,88,0,
+0,0,0,
+0,0,0
+</data>
+ </layer>
+</map>

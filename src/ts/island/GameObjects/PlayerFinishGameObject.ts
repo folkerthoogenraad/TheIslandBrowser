@@ -1,4 +1,7 @@
+import { Graphics } from "graphics/Graphics";
+import { Sprite } from "graphics/Sprite";
 import { InteractableComponent } from "island/Components/InteractableComponent";
+import Resources from "island/Resources";
 import { AABB } from "math/AABB";
 import { BoxCollider } from "math/collision/BoxCollider";
 import { Rigidbody } from "scene/components/Rigidbody";
@@ -9,6 +12,8 @@ export class PlayerFinishGameObject extends GameObject{
    transform: Transform;
    body: Rigidbody;
    interactable: InteractableComponent;
+
+   sprite: Sprite;
 
    constructor(aabb: AABB){
       super();
@@ -22,5 +27,11 @@ export class PlayerFinishGameObject extends GameObject{
       // Interactables and shit
       this.body.useDynamicCollisions = true;
       this.body.collider = BoxCollider.fromAABB(aabb);
+      
+      this.sprite = Resources.sheetObjects.getSprite(112, 0, 16, 16);
+   }
+   
+   draw(graphics: Graphics){
+      graphics.drawSpriteSimple(this.sprite, this.transform.position.x, this.transform.position.y);
    }
 }

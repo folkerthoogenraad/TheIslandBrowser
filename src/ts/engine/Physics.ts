@@ -66,6 +66,8 @@ export class Physics{
       let tilePosition = new Vector2();
 
       this.bodies.forEach(body => {
+         if(body.kinematic) return;
+
          this.layers.forEach(layer => {
             let bbox = body.boundingBox;
 
@@ -111,6 +113,7 @@ export class Physics{
       // Maybe start with sweep and prune
       this.bodies.forEach(body => {
          if(body.solid) return;
+         if(body.kinematic) return;
 
          this.bodies.forEach(other => {
             if(!other.solid) return;
