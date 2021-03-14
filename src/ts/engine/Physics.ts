@@ -176,7 +176,7 @@ export class Physics{
 
    drawDebug(graphics: Graphics){
       return;
-      
+
       this.layers.forEach(layer => {
          layer.drawDebug(graphics, layer.tilemap.tileWidth, layer.tilemap.tileHeight, new AABB(0, 0, 1000, 1000));
       });

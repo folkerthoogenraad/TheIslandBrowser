@@ -1,6 +1,7 @@
 import { Graphics } from "graphics/Graphics";
 import { Scene } from "scene/Scene";
 import { now } from "util/Time";
+import { DebugSettings } from "./DebugSettings";
 import { Input } from "./Input";
 import { Physics } from "./Physics";
 
@@ -18,6 +19,8 @@ export class Game{
    input: Input;
    canvas: HTMLCanvasElement;
 
+   debugSettings: DebugSettings;
+
    constructor(canvas: HTMLCanvasElement){
       this.graphics = new Graphics(canvas);
       this.input = new Input(canvas);
@@ -25,6 +28,9 @@ export class Game{
 
       window.addEventListener("resize", () => this.updateSize());
       this.updateSize();
+
+      this.debugSettings = new DebugSettings();
+      (window as any).debugSettings = this.debugSettings;
    }
 
    run(){

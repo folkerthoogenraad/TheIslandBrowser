@@ -27,6 +27,12 @@ export class Sprite{
 
       return this;
    }
+   setOffset(x: number, y: number){
+      this.offsetX = x;
+      this.offsetY = y;
+
+      return this;
+   }
 }
 
 export class SpriteSheet{

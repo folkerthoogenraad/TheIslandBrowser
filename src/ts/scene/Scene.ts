@@ -2,6 +2,7 @@ import { Game } from "engine/Game";
 import { Physics } from "engine/Physics";
 import { Camera } from "graphics/Camera";
 import { Graphics } from "graphics/Graphics";
+import { ParticleSystem } from "graphics/ParticleSystem";
 import { TileMap } from "tilemap/TileMap";
 import { GameObject } from "./GameObject";
 
@@ -12,6 +13,7 @@ export class Scene{
    tilemap?: TileMap;
 
    physics: Physics;
+   particleSystem: ParticleSystem;
 
    // This gets used for transitions :)
    paused: boolean = false;
@@ -22,6 +24,8 @@ export class Scene{
       this.camera = new Camera();
       this.gameObjects = [];
       this.physics = new Physics();
+
+      this.particleSystem = new ParticleSystem();
    }
 
    init(game: Game){
@@ -43,6 +47,8 @@ export class Scene{
       if(!this.paused) this.tilemap?.update(delta, this.camera.getBounds());
       
       this.gameObjects.forEach(obj => { if(!this.paused || obj.alwaysUpdate) obj.update(delta); });
+
+      if(!this.paused) this.particleSystem.update(delta);
       
       if(!this.paused) this.physics.update(delta);
    }
@@ -55,6 +61,7 @@ export class Scene{
       graphics.setCamera(this.camera);
 
       this.tilemap?.draw(graphics, this.camera.getBounds());
+      this.particleSystem.draw(graphics);
       this.gameObjects.forEach(obj => obj.draw(graphics));
       this.physics.drawDebug(graphics);
    }

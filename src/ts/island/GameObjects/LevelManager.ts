@@ -112,9 +112,11 @@ export class LevelManager extends GameObject{
    fixedUpdate(delta: number){
       super.fixedUpdate(delta);
 
-      if(this.running){
+      if(this.running && !this.scene.paused){
          this.time += delta;
       }
+
+      console.log(this.time);
 
       if(!this.player?.health.alive){
          this.stop();
@@ -139,21 +141,25 @@ export class LevelManager extends GameObject{
 
       this.stop();
 
-      this.completed = false;
-      this.time = 0;
-      this.running = true;
 
       this.player = new PlayerGameObject();
 
       let position = this.spawn.transform.position;
 
-      if(this.currentCheckpoint !== undefined){
+      if(this.currentCheckpoint !== undefined && !this.completed){
          position = this.currentCheckpoint.transform.position;
       }
 
       this.player.transform.position.set(position);
       this.player.transform.interpolatedPosition.set(position);
       this.player.body.previousPosition.set(position);
+
+      this.running = true;
+
+      if(this.completed){
+         this.time = 0;
+         this.completed = false;
+      }
       
       this.scene.addGameObject(this.player);
       

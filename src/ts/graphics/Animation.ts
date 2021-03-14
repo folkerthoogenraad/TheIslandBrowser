@@ -20,6 +20,11 @@ export class Animation{
       this.sprites.forEach(sprite => sprite.center());
       return this;
    }
+   
+   setOffset(x: number, y: number){
+      this.sprites.forEach(sprite => sprite.setOffset(x, y));
+      return this;
+   }
 
    get index(){
       return this._index % this.frames;
@@ -29,6 +34,9 @@ export class Animation{
    }
    get frame(){
       return this.sprites[Math.floor(this.index)];
+   }
+   get duration(){
+      return this.frames / this.frameRate;
    }
 
    clone(){

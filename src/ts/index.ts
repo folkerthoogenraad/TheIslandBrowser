@@ -5,6 +5,7 @@ import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { ChestGameObject } from "island/GameObjects/ChestGameObject";
 import { ColliderGameObject } from "island/GameObjects/ColliderGameObject";
+import { FeatherGameObject } from "island/GameObjects/FeatherGameObject";
 import { LevelManager } from "island/GameObjects/LevelManager";
 import { PlayerCheckpointGameObject } from "island/GameObjects/PlayerCheckpointGameObject";
 import { PlayerFinishGameObject } from "island/GameObjects/PlayerFinishGameObject";
@@ -60,6 +61,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       }
       if(obj.type === "Checkpoint"){
          scene.addGameObject(new PlayerCheckpointGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)))
+      }
+      if(obj.type === "Feather"){
+         scene.addGameObject(new FeatherGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)))
       }
       if(obj.type === "PlayerFinish"){
          scene.addGameObject(new PlayerFinishGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)))

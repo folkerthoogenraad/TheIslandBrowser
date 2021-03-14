@@ -24,6 +24,13 @@ export class PlayerGameObject extends GameObject{
    dashAnimation: Animation;
    wallAnimation: Animation;
 
+   effectJump: Animation;
+   effectLand: Animation;
+   effectWalljump: Animation;
+   effectDoubleJump: Animation;
+   
+   effectDash: Animation;
+
    transform: Transform;
    body: Rigidbody;
    input: PlayerInputComponent;
@@ -63,6 +70,7 @@ export class PlayerGameObject extends GameObject{
    dashTimeout: number = 0;
    dashSavedSpeed: number = 0;
    dashSavedAddition: number = 5;
+   dashAnimationTimer: number = 0;
 
    wallJumpTimer: number = 0;
    get wallJumping() { return this.wallJumpTimer > 0; }
@@ -72,8 +80,9 @@ export class PlayerGameObject extends GameObject{
    get hasWall() { return this.wallLeft || this.wallRight; }
    
    canDash: boolean = false;
-   canDoublejump: boolean = false;
+   canDoubleJump: boolean = false;
    get canJump() { return  this.grounded || (this.groundLeaveTime < this.cayoteTime); }
+
 
 
    constructor(){
@@ -87,6 +96,15 @@ export class PlayerGameObject extends GameObject{
       this.jumpAnimation = sheet.getAnimation(0, 48, 16, 16, 2).center();
       this.dashAnimation = sheet.getAnimation(0, 64, 16, 16, 2).center();
       this.wallAnimation = sheet.getAnimation(0, 80, 16, 16, 2).center();
+
+      this.effectJump = Resources.sheetEffects.getAnimation(0, 0, 16, 16, 3).setOffset(8, 16);
+      this.effectWalljump = Resources.sheetEffects.getAnimation(0, 16, 16, 16, 3).setOffset(0, 8);
+      this.effectLand = Resources.sheetEffects.getAnimation(0, 32, 16, 16, 3).setOffset(8, 16);
+
+      this.effectDash = Resources.sheetEffects.getAnimation(112, 0, 16, 16, 1).setOffset(8, 8);
+      this.effectDash.frameRate = 4;
+
+      this.effectDoubleJump = Resources.sheetEffects.getAnimation(0, 48, 16, 16, 4).setOffset(8, 8);
 
       this.currentAnimation = this.idleAnimation;
 
@@ -160,6 +178,10 @@ export class PlayerGameObject extends GameObject{
 
    fixedUpdate(delta: number){
       super.fixedUpdate(delta);
+
+      if(!this.grounded && this.body.collidedBottom && this.groundLeaveTime > 0.8){
+         this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y + 8, this.effectLand);
+      }
 
       this.grounded = this.body.collidedBottom;
       this.wallLeft = this.body.collidedLeft;
@@ -251,10 +273,13 @@ export class PlayerGameObject extends GameObject{
 
       if(this.dashing){
          this.dashTimer -= delta;
-
+         
+         
          if(this.dashTimer < 0){
             this.dashing = false;
             this.body.velocity.x = this.dashSavedSpeed + this.facing * this.dashSavedAddition;
+
+            this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.effectDash, this.facing);
          }
       }
       else{
@@ -269,12 +294,25 @@ export class PlayerGameObject extends GameObject{
          this.dashTimeout = 0.2;
          this.body.velocity.y = 0;
          this.body.velocity.x = this.facing * this.dashSpeed;
+
+         this.dashAnimationTimer = 0;
       }
       this.dashHop = false;
+
+      this.dashAnimationTimer -= delta;
+
+      if(this.dashing && this.dashAnimationTimer <= 0){
+         this.effectDash.frameRate = 1 / (this.dashTimer / 3 + 0.3);
+         this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.effectDash, this.facing);
+         this.dashAnimationTimer += 0.03;
+      }
+
    }
 
    updateJump(delta: number){
       this.wallJumpTimer -= delta;
+
+      if(this.grounded) this.canDoubleJump = false;
 
       if(this.canJump){
          if(this.jumpHop){
@@ -287,13 +325,18 @@ export class PlayerGameObject extends GameObject{
 
             // This is really hacky but whatever
             this.groundLeaveTime = this.cayoteTime;
+            
+            this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y + 8, this.effectJump);
          }
          this.jumpHop = false;
       }
-      else if(this.canDoublejump){
+      else if(this.canDoubleJump){
          if(this.jumpHop){
             this.body.velocity.y = this.jumpSpeed;
             this.jumping = true;
+            this.canDoubleJump = false;
+            
+            this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y + 6, this.effectDoubleJump);
          }
          this.jumpHop = false;
       }
@@ -309,6 +352,8 @@ export class PlayerGameObject extends GameObject{
 
             // You can dash after your walljump :)
             this.canDash = true;
+            
+            this.scene.particleSystem.addParticle(this.transform.position.x - 5, this.transform.position.y, this.effectWalljump, 1);
          }
          if(this.wallRight && this.jumpHop){
             this.body.velocity.x = -this.moveSpeed;
@@ -321,6 +366,8 @@ export class PlayerGameObject extends GameObject{
 
             // You can dash after your walljump :)
             this.canDash = true;
+            
+            this.scene.particleSystem.addParticle(this.transform.position.x + 5, this.transform.position.y, this.effectWalljump, -1);
          }
       }
       

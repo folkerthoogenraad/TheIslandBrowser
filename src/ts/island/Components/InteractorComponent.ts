@@ -41,7 +41,9 @@ export class InteractorComponent extends Component{
    }
 
    onCollision(other: Rigidbody){
-      let interaction = other.gameObject.findComponent(component => component instanceof InteractableComponent) as InteractableComponent;
+      let interaction = other.gameObject.findComponent(component => component instanceof InteractableComponent) as InteractableComponent|undefined;
+
+      if(interaction === undefined) return;
 
       this.hovers.add(interaction);
    }

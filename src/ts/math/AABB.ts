@@ -17,6 +17,9 @@ export class AABB{
    get x() { return this.left; }
    get y() { return this.top; }
 
+   get centerX() { return this.x + this.width / 2; }
+   get centerY() { return this.y + this.height / 2; }
+
    get width() { return this.right - this.left; }
    get height() { return this.bottom - this.top; }
 
