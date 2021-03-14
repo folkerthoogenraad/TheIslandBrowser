@@ -121,7 +121,7 @@
                  "type":"PlayerSpawn",
                  "visible":true,
                  "width":0,
-                 "x":208,
+                 "x":192,
                  "y":312
                 }, 
                 {
@@ -201,6 +201,50 @@
                  "width":16,
                  "x":2016,
                  "y":144
+                }, 
+                {
+                 "height":16,
+                 "id":228,
+                 "name":"Feather",
+                 "rotation":0,
+                 "type":"Feather",
+                 "visible":true,
+                 "width":16,
+                 "x":768,
+                 "y":256
+                }, 
+                {
+                 "height":16,
+                 "id":229,
+                 "name":"Feather",
+                 "rotation":0,
+                 "type":"Feather",
+                 "visible":true,
+                 "width":16,
+                 "x":880,
+                 "y":272
+                }, 
+                {
+                 "height":16,
+                 "id":230,
+                 "name":"Feather",
+                 "rotation":0,
+                 "type":"Feather",
+                 "visible":true,
+                 "width":16,
+                 "x":960,
+                 "y":240
+                }, 
+                {
+                 "height":16,
+                 "id":231,
+                 "name":"Feather",
+                 "rotation":0,
+                 "type":"Feather",
+                 "visible":true,
+                 "width":16,
+                 "x":1040,
+                 "y":224
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -421,7 +465,7 @@
          "y":0
         }],
  "nextlayerid":73,
- "nextobjectid":228,
+ "nextobjectid":233,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.3",
