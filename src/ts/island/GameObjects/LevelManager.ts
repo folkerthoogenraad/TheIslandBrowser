@@ -146,6 +146,10 @@ export class LevelManager extends GameObject{
 
       let position = this.spawn.transform.position;
 
+      if(this.currentCheckpoint === undefined){
+         this.time = 0;
+      }
+
       if(this.currentCheckpoint !== undefined && !this.completed){
          position = this.currentCheckpoint.transform.position;
       }
