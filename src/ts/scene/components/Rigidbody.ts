@@ -24,6 +24,7 @@ export class Rigidbody extends Component{
    onCollision: Signal<Rigidbody> = new Signal<Rigidbody>();
 
    localAABB: AABB = new AABB();
+   // collider: Collider = new BoxCollider();
 
    init(game: Game){
       super.init(game);
@@ -43,5 +44,6 @@ export class Rigidbody extends Component{
    get boundingBox(){
       this.localAABB.position.set(this.transform.position);
       return this.localAABB;
+      // return this.collider.getBounds(this.transform.position);
    }
 }

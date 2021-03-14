@@ -1,15 +1,18 @@
 import { Graphics } from "graphics/Graphics";
 import { AABB } from "math/AABB";
 import { Rigidbody } from "scene/components/Rigidbody";
+import { TilemapCollisionLayer, TilemapTileLayer } from "tilemap/TileMap";
 import { Curve } from "util/Curve";
 
 export class Physics{
    bodies: Rigidbody[];
+   layers: TilemapCollisionLayer[];
 
    interpolate: boolean = true;
 
    constructor(){
       this.bodies = [];
+      this.layers = [];
    }
 
    addBody(body: Rigidbody){
@@ -44,6 +47,11 @@ export class Physics{
       this.bodies.forEach(body => {
          body.previousPosition.x = body.transform.position.x;
          body.previousPosition.y = body.transform.position.y;
+         
+         body.collidedTop = false;
+         body.collidedBottom = false;
+         body.collidedLeft = false;
+         body.collidedRight = false;
       });
 
       // Move all the bodies
@@ -52,16 +60,38 @@ export class Physics{
          body.transform.position.y += body.velocity.y * delta;
       });
 
+      // Unstuck all the bodies
+      let tileAABB = new AABB();
+
+      this.bodies.forEach(body => {
+         this.layers.forEach(layer => {
+            let bbox = body.boundingBox;
+
+            // Get the BBOX coords
+            let fromX = Math.floor(bbox.left / layer.tilemap.tileWidth);
+            let toX = Math.floor(bbox.right / layer.tilemap.tileWidth);
+
+            let fromY = Math.floor(bbox.top / layer.tilemap.tileHeight);
+            let toY = Math.floor(bbox.bottom / layer.tilemap.tileHeight);
+
+            for(let i = fromX; i <= toX; i++){
+               for(let j = fromY; j <= toY; j++){
+                  if(!layer.isTileSolid(i, j)) continue;
+
+                  tileAABB = layer.getTileCollider(i, j, tileAABB);
+
+                  if(!bbox.overlaps(tileAABB)) continue;
+
+                  this.performCollision(body, bbox, tileAABB);
+               }
+            }
+         });
+      });
+
       // TODO broadphase narrow phase stuff :)
       // Maybe start with sweep and prune
-      // Unstuck all the bodies
       this.bodies.forEach(body => {
          if(body.solid) return;
-
-         body.collidedTop = false;
-         body.collidedBottom = false;
-         body.collidedLeft = false;
-         body.collidedRight = false;
 
          this.bodies.forEach(box => {
             if(!box.solid) return;
@@ -71,23 +101,11 @@ export class Physics{
 
             if(!bbox.overlaps(otherbbox)) return;
 
-            let minOverlapX = bbox.minOverlapXWithBias(otherbbox, body.velocity.x);
-            let minOverlapY = bbox.minOverlapYWithBias(otherbbox, body.velocity.y);
-
-            if(Math.abs(minOverlapX) < Math.abs(minOverlapY)){
-               body.transform.position.x += minOverlapX;
-               body.collidedLeft = body.velocity.x < 0;
-               body.collidedRight = body.velocity.x > 0;
-            }
-            else{
-               body.transform.position.y += minOverlapY;
-               body.collidedBottom = body.velocity.y > 0;
-               body.collidedTop = body.velocity.y < 0;
-            }
-
-
+            this.performCollision(body, bbox, otherbbox);
          });
+      });
 
+      this.bodies.forEach(body => {
          if(body.collidedLeft || body.collidedRight){
             body.velocity.x = -body.velocity.x * body.bouncyness;
          }
@@ -114,6 +132,22 @@ export class Physics{
                other.onCollision.emit(body);
             }
          }
+      }
+   }
+
+   private performCollision(body: Rigidbody, self: AABB, other: AABB){
+      let minOverlapX = self.minOverlapXWithBias(other, body.velocity.x);
+      let minOverlapY = self.minOverlapYWithBias(other, body.velocity.y);
+
+      if(Math.abs(minOverlapX) < Math.abs(minOverlapY)){
+         body.transform.position.x += minOverlapX;
+         body.collidedLeft = body.velocity.x < 0;
+         body.collidedRight = body.velocity.x > 0;
+      }
+      else{
+         body.transform.position.y += minOverlapY;
+         body.collidedBottom = body.velocity.y > 0;
+         body.collidedTop = body.velocity.y < 0;
       }
    }
 

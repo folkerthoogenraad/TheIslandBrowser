@@ -3,6 +3,8 @@ import { SpriteSheet } from "graphics/Sprite";
 export const TiledObjectLayerType = "objectgroup";
 export const TiledTileLayerType = "tilelayer";
 
+export const TiledColliderLayerName = "Colliders";
+
 export interface TiledMap {
    width: number;
    height: number;

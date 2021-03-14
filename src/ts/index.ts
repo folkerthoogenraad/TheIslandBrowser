@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
    scene.tilemap = await TileMap.fromTiledMapDownload("assets/levels/level4.json", (obj) => {
       if(obj.type === "Collider" || obj.type === "PlatformCollider"){
-         scene.addGameObject(new ColliderGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         // scene.addGameObject(new ColliderGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
       }
       if(obj.type === "LevelManager"){
          scene.addGameObject(new LevelManager());
@@ -76,6 +76,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
          scene.addGameObject(spikes);
       }
    });
+   scene.physics.layers = scene.tilemap.colliders;
    
    game.scene = scene;
 
