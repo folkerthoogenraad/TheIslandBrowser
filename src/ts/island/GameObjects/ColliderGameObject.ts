@@ -1,4 +1,5 @@
 import { AABB } from "math/AABB";
+import { BoxCollider } from "math/collision/BoxCollider";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
@@ -11,11 +12,11 @@ export class ColliderGameObject extends GameObject{
       super();
 
       this.transform = this.addComponent(new Transform());
-      this.transform.position.set(aabb.position);
+      this.transform.position.apply(aabb.x, aabb.y);
       
       this.body = this.addComponent(new Rigidbody());
 
       this.body.solid = true;
-      this.body.localAABB = aabb;
+      this.body.collider = BoxCollider.fromAABB(aabb);
    }
 }

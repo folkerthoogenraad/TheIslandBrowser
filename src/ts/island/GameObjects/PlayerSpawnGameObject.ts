@@ -10,6 +10,6 @@ export class PlayerSpawnGameObject extends GameObject{
       super();
 
       this.transform = this.addComponent(new Transform());
-      this.transform.position.set(aabb.position);
+      this.transform.position.apply(aabb.x, aabb.y);
    }
 }

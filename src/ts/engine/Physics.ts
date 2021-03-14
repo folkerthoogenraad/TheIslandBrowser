@@ -1,5 +1,8 @@
 import { Graphics } from "graphics/Graphics";
 import { AABB } from "math/AABB";
+import { unstuck } from "math/collision/Collision";
+import { TileCollider } from "math/collision/TileCollider";
+import { Vector2 } from "math/Vector2";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { TilemapCollisionLayer, TilemapTileLayer } from "tilemap/TileMap";
 import { Curve } from "util/Curve";
@@ -47,11 +50,8 @@ export class Physics{
       this.bodies.forEach(body => {
          body.previousPosition.x = body.transform.position.x;
          body.previousPosition.y = body.transform.position.y;
-         
-         body.collidedTop = false;
-         body.collidedBottom = false;
-         body.collidedLeft = false;
-         body.collidedRight = false;
+
+         body.unstuckDistance.setZero();
       });
 
       // Move all the bodies
@@ -61,7 +61,9 @@ export class Physics{
       });
 
       // Unstuck all the bodies
+      let tileCollider = new TileCollider();
       let tileAABB = new AABB();
+      let tilePosition = new Vector2();
 
       this.bodies.forEach(body => {
          this.layers.forEach(layer => {
@@ -78,11 +80,28 @@ export class Physics{
                for(let j = fromY; j <= toY; j++){
                   if(!layer.isTileSolid(i, j)) continue;
 
-                  tileAABB = layer.getTileCollider(i, j, tileAABB);
+                  tilePosition.x = i * layer.tilemap.tileWidth;
+                  tilePosition.y = j * layer.tilemap.tileHeight;
+
+                  tileCollider = layer.getTileCollider(i, j, tileCollider);
+
+                  tileAABB = tileCollider.getBounds(tilePosition, tileAABB);
 
                   if(!bbox.overlaps(tileAABB)) continue;
 
-                  this.performCollision(body, bbox, tileAABB);
+                  let unstuckDist = unstuck(
+                     body.collider,
+                     tileCollider,
+                     tilePosition.sub(body.transform.position),
+                     body.velocity
+                  );
+
+                  if(unstuckDist !== undefined){
+                     body.transform.position.add(unstuckDist);
+                     body.unstuckDistance.add(unstuckDist);
+                  }
+
+                  // this.performCollision(body, bbox, tileAABB);
                }
             }
          });
@@ -93,19 +112,36 @@ export class Physics{
       this.bodies.forEach(body => {
          if(body.solid) return;
 
-         this.bodies.forEach(box => {
-            if(!box.solid) return;
+         this.bodies.forEach(other => {
+            if(!other.solid) return;
    
             let bbox = body.boundingBox;
-            let otherbbox = box.boundingBox;
+            let otherbbox = other.boundingBox;
 
             if(!bbox.overlaps(otherbbox)) return;
 
-            this.performCollision(body, bbox, otherbbox);
+            let unstuckDist = unstuck(
+               body.collider,
+               other.collider,
+               other.transform.position.clone().sub(body.transform.position),
+               body.velocity); // TODO relative velocity
+
+            if(unstuckDist !== undefined){
+               body.transform.position.add(unstuckDist);
+               body.unstuckDistance.add(unstuckDist);
+            }
+
          });
       });
 
       this.bodies.forEach(body => {
+
+         body.collidedBottom = body.unstuckDistance.y < 0;
+         body.collidedTop = body.unstuckDistance.y > 0;
+
+         body.collidedLeft = body.unstuckDistance.x > 0;
+         body.collidedRight = body.unstuckDistance.x < 0;
+
          if(body.collidedLeft || body.collidedRight){
             body.velocity.x = -body.velocity.x * body.bouncyness;
          }
@@ -135,26 +171,14 @@ export class Physics{
       }
    }
 
-   private performCollision(body: Rigidbody, self: AABB, other: AABB){
-      let minOverlapX = self.minOverlapXWithBias(other, body.velocity.x);
-      let minOverlapY = self.minOverlapYWithBias(other, body.velocity.y);
-
-      if(Math.abs(minOverlapX) < Math.abs(minOverlapY)){
-         body.transform.position.x += minOverlapX;
-         body.collidedLeft = body.velocity.x < 0;
-         body.collidedRight = body.velocity.x > 0;
-      }
-      else{
-         body.transform.position.y += minOverlapY;
-         body.collidedBottom = body.velocity.y > 0;
-         body.collidedTop = body.velocity.y < 0;
-      }
-   }
-
    drawDebug(graphics: Graphics){
       return;
-      graphics.setColor("rgba(255,0,0, 0.6)");
       
+      this.layers.forEach(layer => {
+         layer.drawDebug(graphics, layer.tilemap.tileWidth, layer.tilemap.tileHeight, new AABB(0, 0, 1000, 1000));
+      });
+      
+      graphics.setColor("rgba(255,0,0, 0.6)");
       this.bodies.forEach(body => {
          if(!body.solid) return;
          

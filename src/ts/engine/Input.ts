@@ -95,6 +95,7 @@ export class GamepadInput{
 }
 
 type Key = string;
+type MouseButton = number;
 
 export class Keyboard{
    public static readonly KeyEnter : Key = "Enter";
@@ -152,15 +153,98 @@ export class Keyboard{
    }
 }
 
+export class Mouse{
+   public static readonly ButtonLeft : MouseButton = 0;
+   public static readonly ButtonMiddle : MouseButton = 1;
+   public static readonly ButtonRight : MouseButton = 2;
+
+   buttons: boolean[];
+   buttonsPressed: boolean[];
+   buttonsReleased: boolean[];
+
+   x: number;
+   y: number;
+   previousX: number;
+   previousY: number;
+
+   root: HTMLElement;
+
+   constructor(root: HTMLElement){
+      this.buttons = new Array(10);
+      this.buttonsPressed = new Array(10);
+      this.buttonsReleased = new Array(10);
+
+      this.buttons.fill(false);
+      this.buttonsPressed.fill(false);
+      this.buttonsReleased.fill(false);
+
+      this.root = root;
+
+      this.x = 0;
+      this.y = 0;
+      this.previousX = 0;
+      this.previousY = 0;
+
+      console.dir(root);
+
+      root?.addEventListener("mousemove", this.onMouseMove.bind(this));
+      root?.addEventListener("mousedown", this.onMouseDown.bind(this));
+      root?.addEventListener("mouseup", this.onMouseUp.bind(this));
+   }
+
+   private onMouseMove(event: MouseEvent){
+      this.x = event.offsetX / this.root.offsetWidth;
+      this.y = event.offsetY / this.root.offsetWidth;
+   }
+   private onMouseDown(event: MouseEvent){
+      this.onMouseMove(event);
+      this.buttons[event.button] = true;
+      this.buttonsPressed[event.button] = true;
+   }
+   private onMouseUp(event: MouseEvent){
+      this.onMouseMove(event);
+      this.buttons[event.button] = false;
+      this.buttonsReleased[event.button] = true;
+   }
+
+   isButtonDown(button: MouseButton){
+      return this.buttons[button];
+   }
+   isButtonPressed(button: MouseButton){
+      return this.buttonsPressed[button];
+   }
+   isButtonReleased(button: MouseButton){
+      return this.buttonsReleased[button];
+   }
+
+   flush(){
+      this.buttonsPressed.fill(false);
+      this.buttonsReleased.fill(false);
+
+      this.previousX = this.x;
+      this.previousY = this.y;
+   }
+
+   get deltaX(){
+      return this.x - this.previousX;
+   }
+   get deltaY(){
+      return this.y - this.previousY;
+   }
+
+}
+
 export class Input {
    gamepads: GamepadInput[];
    keyboard: Keyboard;
+   mouse: Mouse;
 
-   root?: HTMLElement;
+   root: HTMLElement;
 
-   constructor(root?: HTMLElement){
+   constructor(root: HTMLElement){
       this.gamepads = [];
       this.keyboard = new Keyboard(root);
+      this.mouse = new Mouse(root);
       this.root = root;
 
       // Weird construction but typescript hates progress 
@@ -197,5 +281,6 @@ export class Input {
    }
    flush(){
       this.keyboard.flush();
+      this.mouse.flush();
    }
 }

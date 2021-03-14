@@ -13,10 +13,21 @@ export class Camera{
          aabb = new AABB();
       }
 
-      aabb.position.set(this.center);
-      aabb.offset.apply(this.width / 2, this.height / 2);
-      aabb.size.apply(this.width, this.height);
+      return aabb.set(
+         this.center.x - this.width / 2,
+         this.center.y - this.height / 2,
+         this.center.x + this.width / 2,
+         this.center.y + this.height / 2
+      );
+   }
 
-      return aabb;
+   screenToWorldX(x: number){
+      return x * this.width + this.center.x - this.width / 2;
+   }
+   // screenToWorldY(y: number){
+   //    return y * this.height + this.center.y - this.height / 2;
+   // }
+   screenToWorldY(y: number){
+      return y * this.width + this.center.y - this.width / 2;
    }
 }

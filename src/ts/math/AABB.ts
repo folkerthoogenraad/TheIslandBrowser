@@ -1,24 +1,24 @@
 import { Vector2 } from "./Vector2";
 
 export class AABB{
-   position: Vector2;
-   offset: Vector2;
-   size: Vector2;
 
-   constructor(position: Vector2 = new Vector2(), size: Vector2 = new Vector2(), offset: Vector2 = new Vector2()) { 
-      this.position = position;
-      this.size = size;
-      this.offset = offset;
+   left: number;
+   top: number;
+   bottom: number;
+   right: number;
+
+   constructor(left: number = 0, top: number = 0, right: number = 0, bottom: number = 0) { 
+      this.left = left;
+      this.top = top;
+      this.right = right;
+      this.bottom = bottom;
    }
 
-   get left() { return this.position.x - this.offset.x; }
-   get top() { return this.position.y - this.offset.y; }
-   
-   get right() {return this.position.x + this.size.x - this.offset.x; }
-   get bottom() {return this.position.y + this.size.y - this.offset.y; }
+   get x() { return this.left; }
+   get y() { return this.top; }
 
-   get width() { return this.size.x; }
-   get height() { return this.size.y; }
+   get width() { return this.right - this.left; }
+   get height() { return this.bottom - this.top; }
 
    overlaps(other: AABB){
       return this.overlapsX(other) && this.overlapsY(other);
@@ -62,17 +62,29 @@ export class AABB{
       return -(this.bottom - other.top);
    }
 
-   set(other: AABB){
-      this.position.set(other.position);
-      this.size.set(other.size);
-      this.offset.set(other.offset);
+   copy(other: AABB){
+      this.left = other.left;
+      this.right = other.right;
+      this.bottom = other.bottom;
+      this.top = other.top;
+      
+      return this;
+   }
+
+   set(left: number, top: number, right: number, bottom: number) { 
+      this.left = left;
+      this.top = top;
+      this.right = right;
+      this.bottom = bottom;
+
+      return this;
    }
 
    clone(){
-      return new AABB(this.position.clone(), this.size.clone(), this.offset.clone());
+      return new AABB(this.left, this.top, this.right, this.bottom);
    }
 
    static Create(x: number, y: number, w: number, h: number){
-      return new AABB(new Vector2(x, y), new Vector2(w, h));
+      return new AABB(x, y, x + w, y + h);
    }
 }

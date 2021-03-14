@@ -4,6 +4,7 @@ import { InteractableComponent } from "island/Components/InteractableComponent";
 import { InteractorComponent } from "island/Components/InteractorComponent";
 import Resources from "island/Resources";
 import { AABB } from "math/AABB";
+import { BoxCollider } from "math/collision/BoxCollider";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
@@ -23,7 +24,7 @@ export class PlayerCheckpointGameObject extends GameObject{
       super();
 
       this.transform = this.addComponent(new Transform());
-      this.transform.position.set(aabb.position);
+      this.transform.position.apply(aabb.x, aabb.y);
       
       this.body = this.addComponent(new Rigidbody());
       this.interactable = this.addComponent(new InteractableComponent());
@@ -32,7 +33,7 @@ export class PlayerCheckpointGameObject extends GameObject{
 
       // Interactables and shit
       this.body.useDynamicCollisions = true;
-      this.body.localAABB = aabb;
+      this.body.collider = BoxCollider.fromAABB(aabb);
 
       this.closedAnimation = Resources.sheetObjects.getAnimation(0, 112, 16, 16, 1);
       this.openAnimation = Resources.sheetObjects.getAnimation(16, 112, 16, 16, 2);

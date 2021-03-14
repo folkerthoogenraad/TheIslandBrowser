@@ -1,5 +1,7 @@
 import { Game } from "engine/Game";
 import { AABB } from "math/AABB";
+import { BoxCollider } from "math/collision/BoxCollider";
+import { Collider } from "math/collision/Collider";
 import { Vector2 } from "math/Vector2";
 import { Component } from "scene/Component";
 import { Signal } from "signals/Signal";
@@ -12,6 +14,7 @@ export class Rigidbody extends Component{
    bouncyness: number = 0;
 
    previousPosition: Vector2 = new Vector2();
+   unstuckDistance: Vector2 = new Vector2();
 
    collidedLeft: boolean = false;
    collidedRight: boolean = false;
@@ -23,8 +26,15 @@ export class Rigidbody extends Component{
 
    onCollision: Signal<Rigidbody> = new Signal<Rigidbody>();
 
-   localAABB: AABB = new AABB();
-   // collider: Collider = new BoxCollider();
+   collider: Collider = new BoxCollider();
+
+   private aabb: AABB;
+
+   constructor(){
+      super();
+      
+      this.aabb = new AABB(0, 0, 0, 0);
+   }
 
    init(game: Game){
       super.init(game);
@@ -42,8 +52,6 @@ export class Rigidbody extends Component{
    }
 
    get boundingBox(){
-      this.localAABB.position.set(this.transform.position);
-      return this.localAABB;
-      // return this.collider.getBounds(this.transform.position);
+      return this.collider.getBounds(this.transform.position, this.aabb);
    }
 }

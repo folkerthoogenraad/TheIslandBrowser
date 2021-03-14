@@ -65,7 +65,7 @@ export class Graphics{
       this.context.resetTransform();
 
       let cameraHeight = camera.height;
-      let cameraWidth = this.canvas.width / this.canvas.height * cameraHeight;
+      let cameraWidth = camera.width;//this.canvas.width / this.canvas.height * cameraHeight;
 
       this.context.scale(1 / cameraWidth, 1 / cameraHeight);
       this.context.scale(this.canvas.width, this.canvas.height);

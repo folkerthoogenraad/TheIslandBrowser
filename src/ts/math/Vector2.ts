@@ -48,6 +48,14 @@ export class Vector2{
    apply(x: number, y: number){
       this.x = x;
       this.y = y;
+      
+      return this;
+   }
+   negate(){
+      this.x = -this.x;
+      this.y = -this.y;
+
+      return this;
    }
 
    normalize(){

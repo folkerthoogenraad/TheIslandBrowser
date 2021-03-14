@@ -146,6 +146,7 @@ export class LevelManager extends GameObject{
       }
 
       this.player.transform.position.set(position);
+      this.player.transform.interpolatedPosition.set(position);
       this.player.body.previousPosition.set(position);
       
       this.scene.addGameObject(this.player);
@@ -166,7 +167,7 @@ export class LevelManager extends GameObject{
    updateCamera(delta: number){
       if(!this.player) return;
 
-      const position = this.player.transform.interpolatedPosition;
+      const position = this.player.transform.position;
 
       const sceneWidth = this.scene.tilemap!.pixelWidth;
       const sceneHeight = this.scene.tilemap!.pixelHeight;
@@ -196,6 +197,6 @@ export class LevelManager extends GameObject{
 
       this.scene.paused = Vector2.distance(wantedPosition, cam.center) > 1;
 
-      cam.center.lerpTo(wantedPosition, delta * 7);
+      cam.center.lerpTo(wantedPosition, delta * 10);
    }
 }

@@ -2,6 +2,7 @@ import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { AABB } from "math/AABB";
+import { TileCollider } from "math/collision/TileCollider";
 import { getSpriteFromTileset, TiledMap, TiledObject, TiledObjectLayer, TiledObjectLayerType, TiledTileLayer, TiledTileLayerType, TiledColliderLayerName, TiledTileset } from "./TiledMap";
 
 type TilemapObjectLoader = (object: TiledObject) => void;
@@ -90,29 +91,29 @@ export class TilemapCollisionLayer{
          Math.floor(y / this.tilemap.tileHeight)
       );
    }
-   getTileColliderAtPixel(x: number, y: number, aabb: AABB){
-      return this.getTileCollider(
-         Math.floor(x / this.tilemap.tileWidth),
-         Math.floor(y / this.tilemap.tileHeight),
-         aabb
-      );
-   }
 
    isTileSolid(x: number, y: number){
       return this.getTile(x, y);
    }
 
-   getTileCollider(x: number, y: number, aabb: AABB){
-      aabb.position.x = x * this.tilemap.tileWidth;
-      aabb.position.y = y * this.tilemap.tileHeight;
+   getTileCollider(x: number, y: number, tileCollider: TileCollider){
+      tileCollider.size.x = this.tilemap.tileWidth;
+      tileCollider.size.y = this.tilemap.tileHeight;
 
-      aabb.size.x = this.tilemap.tileWidth;
-      aabb.size.y = this.tilemap.tileHeight;
+      tileCollider.top = !this.isTileSolid(x, y - 1);
+      tileCollider.bottom = !this.isTileSolid(x, y + 1);
+      tileCollider.left = !this.isTileSolid(x - 1, y);
+      tileCollider.right = !this.isTileSolid(x + 1, y);
 
-      return aabb;
+      return tileCollider;
    }
 
    getTile(x: number, y: number){
+      if(x < 0) return false;
+      if(x >= this.width) return false;
+      if(y < 0) return false; 
+      if(y >= this.height) return false;
+
       return this.tiles[x + y * this.width];
    }
    setTile(x: number, y: number, solid: boolean){
@@ -129,13 +130,29 @@ export class TilemapCollisionLayer{
       let startY = Math.floor(Math.max(0, bounds.top / tileHeight));
       let endY = Math.floor(Math.min(this.height, bounds.bottom / tileHeight + 1));
 
-      graphics.setColor("blue");
+      graphics.setColor("rgba(255, 90, 20, 0.8)");
+
+      let collider = new TileCollider();
+      const thickness = 2;
 
       for(let x = startX; x < endX; x++){
          for(let y = startY; y < endY; y++){
             if(!this.isTileSolid(x, y)) continue;
 
-            graphics.drawRectangle(x * tileWidth, y * tileHeight, tileWidth, tileHeight, true);
+            collider = this.getTileCollider(x, y, collider);
+
+            if(collider.top){
+               graphics.drawRectangle(x * tileWidth, y * tileHeight, tileWidth, thickness, true);
+            }
+            if(collider.bottom){
+               graphics.drawRectangle(x * tileWidth, y * tileHeight + tileHeight - thickness, tileWidth, thickness, true);
+            }
+            if(collider.left){
+               graphics.drawRectangle(x * tileWidth, y * tileHeight, thickness, tileHeight, true);
+            }
+            if(collider.right){
+               graphics.drawRectangle(x * tileWidth + tileWidth - thickness, y * tileHeight, thickness, tileHeight, true);
+            }
          }
       }
    }

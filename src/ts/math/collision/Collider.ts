@@ -1,5 +1,6 @@
 import { AABB } from "math/AABB";
+import { Vector2 } from "math/Vector2";
 
 export abstract class Collider{
-   abstract getBounds(x: number, y: number, out: AABB): AABB;
+   abstract getBounds(position: Vector2, out: AABB): AABB;
 }

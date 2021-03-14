@@ -4,6 +4,7 @@ import { InteractableComponent } from "island/Components/InteractableComponent";
 import { InteractorComponent } from "island/Components/InteractorComponent";
 import Resources from "island/Resources";
 import { AABB } from "math/AABB";
+import { BoxCollider } from "math/collision/BoxCollider";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
@@ -22,14 +23,14 @@ export class ChestGameObject extends GameObject{
       super();
 
       this.transform = this.addComponent(new Transform());
-      this.transform.position.set(aabb.position);
+      this.transform.position.apply(aabb.x, aabb.y);
       
       this.body = this.addComponent(new Rigidbody());
       this.interactable = this.addComponent(new InteractableComponent());
 
       this.interactable.onInteract.listen(this.onInteract.bind(this));
 
-      this.body.localAABB = aabb;
+      this.body.collider = BoxCollider.fromAABB(aabb);
       this.body.useDynamicCollisions = true;
 
       this.closed = Resources.sheetObjects.getSprite(0, 64, 16, 16);

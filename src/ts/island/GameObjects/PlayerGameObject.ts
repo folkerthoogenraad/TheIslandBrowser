@@ -1,3 +1,4 @@
+import { Mouse } from "engine/Input";
 import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
@@ -6,6 +7,8 @@ import { InteractableComponent } from "island/Components/InteractableComponent";
 import { InteractorComponent } from "island/Components/InteractorComponent";
 import { PlayerInputComponent } from "island/Components/PlayerInputComponent";
 import { AABB } from "math/AABB";
+import { BoxCollider } from "math/collision/BoxCollider";
+import { Vector2 } from "math/Vector2";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
@@ -96,10 +99,38 @@ export class PlayerGameObject extends GameObject{
       
       this.body.useDynamicCollisions = true;
 
-      this.body.localAABB.offset.x = 5;
-      this.body.localAABB.offset.y = 5;
-      this.body.localAABB.size.x = 10;
-      this.body.localAABB.size.y = 13;
+      this.body.collider = new BoxCollider(
+         new Vector2(10, 13),
+         new Vector2(5, 5)
+      );
+   }
+
+   _fixedUpdate(delta: number){
+      const mouse = this.game.input.mouse;
+
+      this.transform.position.x = this.scene.camera.screenToWorldX(mouse.x);
+      this.transform.position.y = this.scene.camera.screenToWorldY(mouse.y);
+
+      // this.body.velocity.x = this.scene.camera.screenToWorldX(mouse.deltaX) / delta;
+      // this.body.velocity.y = this.scene.camera.screenToWorldY(mouse.deltaY) / delta;
+      
+      // if(mouse.isButtonPressed(Mouse.ButtonLeft)){
+      // }
+
+      this.grounded = this.body.collidedBottom;
+      this.wallLeft = this.body.collidedLeft;
+      this.wallRight = this.body.collidedRight;
+      
+      if(this.input.direction > 0){
+         this.facing = 1;
+      }
+      if(this.input.direction < 0){
+         this.facing = -1;
+      }
+      if(this.wallLeft && !this.grounded) this.facing = 1;
+      if(this.wallRight && !this.grounded) this.facing = -1;
+
+      this.updateAnimation(delta);
    }
 
    update(delta: number){
@@ -314,7 +345,7 @@ export class PlayerGameObject extends GameObject{
       if(!this.grounded && this.body.velocity.y < 0){
          this.currentAnimation = this.jumpAnimation;
       }
-      if(!this.grounded && this.body.velocity.y > 0){
+      if(!this.grounded && this.body.velocity.y >= 0){
          this.currentAnimation = this.fallAnimation;
       }
       if((this.wallLeft || this.wallRight) && !this.grounded){
