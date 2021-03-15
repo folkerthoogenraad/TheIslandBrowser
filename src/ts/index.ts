@@ -20,6 +20,7 @@ import { GameObject } from "scene/GameObject";
 import { Scene } from "scene/Scene";
 import { TileMap } from "tilemap/TileMap";
 import List from "util/List";
+import { initWebgl } from "webgl";
 
 // Fuck this but whatever
 function initModal(element: HTMLElement){
@@ -45,6 +46,10 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
    let canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
+   initWebgl(canvas);
+
+   return;
+/*
    let game = new Game(canvas);
    
    let scene = new Scene();
@@ -85,4 +90,5 @@ document.addEventListener("DOMContentLoaded", async ()=>{
    game.scene = scene;
 
    game.run();
+   */
 });
