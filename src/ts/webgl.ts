@@ -23,7 +23,14 @@ varying highp vec2 v_UV;
 uniform sampler2D u_Texture;
 
 void main() {
-   gl_FragColor = texture2D(u_Texture, v_UV) * v_Color;
+   highp vec4 color = texture2D(u_Texture, v_UV) * v_Color;
+
+   // Low color precision :)
+   //color.r = floor(color.r * 8.0) / 8.0;
+   //color.g = floor(color.g * 8.0) / 8.0;
+   //color.b = floor(color.b * 8.0) / 8.0;
+
+   gl_FragColor = color;
 }
 `;
 
@@ -139,6 +146,10 @@ class Texture{
          0, this.gl.RGBA, width, height, 0, 
          this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
    }
+   setDataFromImage(image: HTMLImageElement){
+      this.bind();
+      this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
+   }
 
    bind(){
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.id);
@@ -170,6 +181,148 @@ class Texture{
 
       return data;
    }
+
+   static colorData(width: number, height: number){
+      let data = new Uint8Array(width * height * 4);
+
+      for(let i = 0; i < width; i++){
+         for(let j = 0; j < height; j++){
+            let index = (i + j * width) * 4;
+            
+            let value = 255;
+
+            data[index + 0] = value;
+            data[index + 1] = value;
+            data[index + 2] = value;
+            data[index + 3] = 255;
+
+         }
+      }
+
+      return data;
+   }
+}
+
+class ResourceManager{
+   gl: WebGLRenderingContext;
+   textures: {[key: string]: Texture|undefined};
+
+   constructor(gl: WebGLRenderingContext){
+      this.textures = {};
+      this.gl = gl;
+   }
+
+   loadTexture(src: string): Texture{
+      let found = this.textures[src];
+      if(found !== undefined){
+         return found;
+      }
+
+      let texture = new Texture(this.gl);
+      this.textures[src] = texture;
+
+      texture.setData(1, 1, Texture.colorData(1, 1));
+
+      let img = new Image();
+      img.onload = () =>{
+         texture.setDataFromImage(img);
+      };
+      img.src = src;
+      return texture;
+   }
+   loadTextureFromImage(img: HTMLImageElement){
+      this.loadTexture(img.src);
+   }
+}
+
+class VertexBatch{
+   public static readonly FloatSizeInBytes = 4;
+
+   public static readonly PositionSize = 3;
+   public static readonly ColorSize = 4;
+   public static readonly UVSize = 2;
+   
+   public static readonly PositionOffset = 0;
+   public static readonly ColorOffset = VertexBatch.PositionSize;
+   public static readonly UVOffset = VertexBatch.PositionSize + VertexBatch.ColorSize;
+
+   public static readonly PositionOffsetInBytes = VertexBatch.PositionOffset * VertexBatch.FloatSizeInBytes;
+   public static readonly ColorOffsetInBytes = VertexBatch.ColorOffset * VertexBatch.FloatSizeInBytes;
+   public static readonly UVOffsetInBytes = VertexBatch.UVOffset * VertexBatch.FloatSizeInBytes;
+
+   public static readonly Stride = VertexBatch.PositionSize + VertexBatch.ColorSize + VertexBatch.UVSize;
+   public static readonly StrideInBytes = VertexBatch.Stride * VertexBatch.FloatSizeInBytes;
+
+   gl: WebGLRenderingContext;
+
+   buffer: WebGLBuffer;
+   data: Float32Array;
+   index: number;
+
+   u: number = 0;
+   v: number = 0;
+   r: number = 1;
+   g: number = 1;
+   b: number = 1;
+   a: number = 1;
+
+   length: number = 0;
+
+   constructor(gl: WebGLRenderingContext){
+      this.gl = gl;
+      
+      this.data = new Float32Array(3 * 256);
+      this.index = 0;
+
+      this.buffer = gl.createBuffer()!;
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, this.data, gl.DYNAMIC_DRAW);
+   }
+   
+   uv(u: number, v: number){
+      this.u = u;
+      this.v = v;
+   }
+   
+   color(r: number, g: number, b: number, a: number){
+      this.r = r;
+      this.g = g;
+      this.b = b;
+      this.a = a;
+   }
+
+   vertex(x: number, y: number, z: number){
+      let idx = this.index * VertexBatch.Stride + VertexBatch.PositionOffset;
+
+      this.data[idx + 0] = x;
+      this.data[idx + 1] = y;
+      this.data[idx + 2] = z;
+      
+      this.data[idx + 3] = this.r;
+      this.data[idx + 4] = this.g;
+      this.data[idx + 5] = this.b;
+      this.data[idx + 6] = this.a;
+      
+      this.data[idx + 7] = this.u;
+      this.data[idx + 8] = this.v;
+
+      // TODO should this submit?
+      this.index++;
+   }
+
+   flush(){
+      // This is nice to optimize with webgl2 to get buffersubdata with offsets and whatnot
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, this.data, this.gl.DYNAMIC_DRAW);
+
+      this.length = this.index;
+      this.index = 0;
+   }
+
+   destroy(){
+      this.gl.deleteBuffer(this.buffer);
+   }
 }
 
 export function initWebgl(canvas: HTMLCanvasElement){
@@ -181,6 +334,8 @@ export function initWebgl(canvas: HTMLCanvasElement){
    if(gl === null){
       return;
    }
+
+   let resources = new ResourceManager(gl);
    
    let program = new ShaderProgram(gl, vsSource, fsSource);
 
@@ -192,29 +347,27 @@ export function initWebgl(canvas: HTMLCanvasElement){
    let projectionUniform = program.getUniformLocation("u_MatrixProjection");
    let textureUniform = program.getUniformLocation("u_Texture");
 
-   const vertexBuffer = gl.createBuffer();
+   // const vertexBuffer = gl.createBuffer();
 
-   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+   // gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
 
-   let triangleCount = 6;
-   let triangleData = [
-      0, 0, 0,  1, 0, 0, 1,   0, 0,
-      0, 1, 0,  0, 1, 0, 1,   0, 1,
-      1, 1, 0,  0, 0, 1, 1,   1, 1,
+   // let triangleCount = 6;
+   // let triangleData = [
+   //    0, 0, 0,  1, 0, 0, 1,   0, 0,
+   //    0, 1, 0,  0, 1, 0, 1,   0, 1,
+   //    1, 1, 0,  0, 0, 1, 1,   1, 1,
       
-      0, 0, 0,  1, 0, 0, 1,   0, 0,
-      1, 1, 0,  0, 0, 1, 1,   1, 1,
-      1, 0, 0,  0, 1, 0, 1,   1, 0,
-   ];
+   //    0, 0, 0,  1, 0, 0, 1,   0, 0,
+   //    1, 1, 0,  0, 0, 1, 1,   1, 1,
+   //    1, 0, 0,  0, 0, 0, 1,   1, 0,
+   // ];
 
-   gl.bufferData(gl.ARRAY_BUFFER,
-      new Float32Array(triangleData),
-      gl.STATIC_DRAW);
+   // gl.bufferData(gl.ARRAY_BUFFER,
+   //    new Float32Array(triangleData),
+   //    gl.STATIC_DRAW);
 
-   
-   let texture = new Texture(gl);
-   texture.setData(16, 16, Texture.checkerboardData(16, 16));
+   let texture = resources.loadTexture("/assets/img/Player.png");
 
    const projectionMatrix = new Float32Array([
       1, 0, 0, 0,
@@ -229,23 +382,26 @@ export function initWebgl(canvas: HTMLCanvasElement){
       0, 0, 0, 1
    ]);
 
+   let batch = new VertexBatch(gl);
+
+   gl.enable(gl.BLEND);
+   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);  
+
    let drawScene = () => {
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
       // Setup array buffers
-      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      // gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      batch.color(1, 0, 0, 1); batch.uv(0, 0); batch.vertex(0, 0, 0);
+      batch.color(1, 0, 0, 1); batch.uv(1, 0); batch.vertex(1, 0, 0);
+      batch.color(1, 0, 0, 1); batch.uv(1, 1); batch.vertex(1, 1, 0);
+      batch.flush();
 
-      const floatSize = 4;
-      const positionSize = 3;
-      const colorSize = 4;
-      const uvSize = 2;
-      const stride = (positionSize + colorSize + uvSize) * floatSize;
-      
       // Vertex
-      gl.vertexAttribPointer(positionAttribute, 3, gl.FLOAT, false, stride, 0);
-      gl.vertexAttribPointer(colorAttribute, 4, gl.FLOAT, false, stride, positionSize * floatSize);
-      gl.vertexAttribPointer(uvAttribute, 2, gl.FLOAT, false, stride, (positionSize + colorSize) * floatSize);
+      gl.vertexAttribPointer(positionAttribute, 3, gl.FLOAT, false, VertexBatch.StrideInBytes, VertexBatch.PositionOffsetInBytes);
+      gl.vertexAttribPointer(colorAttribute, 4, gl.FLOAT, false, VertexBatch.StrideInBytes, VertexBatch.ColorOffsetInBytes);
+      gl.vertexAttribPointer(uvAttribute, 2, gl.FLOAT, false, VertexBatch.StrideInBytes, VertexBatch.UVOffsetInBytes);
 
       // Enable all
       gl.enableVertexAttribArray(positionAttribute);
@@ -258,8 +414,10 @@ export function initWebgl(canvas: HTMLCanvasElement){
 
       program.setUniformTexture(textureUniform!, texture);
 
-      gl.drawArrays(gl.TRIANGLES, 0, triangleCount);
+      gl.drawArrays(gl.TRIANGLES, 0, batch.length);
    }
 
    drawScene();
+
+   (window as any).drawScene = drawScene;
 }
