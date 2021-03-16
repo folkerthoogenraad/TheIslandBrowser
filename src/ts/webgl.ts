@@ -1,5 +1,7 @@
+import { Camera } from "graphics/Camera";
+
 const vsSource = `
-attribute vec4 position;
+attribute vec3 position;
 attribute vec4 color;
 attribute vec2 uv;
 
@@ -12,7 +14,7 @@ varying highp vec2 v_UV;
 void main() {
    v_Color = color;
    v_UV = uv;
-   gl_Position = u_MatrixProjection * u_MatrixModelView * position;
+   gl_Position = u_MatrixProjection * u_MatrixModelView * vec4(position, 1.0);
 }
 `;
 
@@ -26,9 +28,9 @@ void main() {
    highp vec4 color = texture2D(u_Texture, v_UV) * v_Color;
 
    // Low color precision :)
-   //color.r = floor(color.r * 8.0) / 8.0;
-   //color.g = floor(color.g * 8.0) / 8.0;
-   //color.b = floor(color.b * 8.0) / 8.0;
+   // color.r = floor(color.r * 8.0) / 8.0;
+   // color.g = floor(color.g * 8.0) / 8.0;
+   // color.b = floor(color.b * 8.0) / 8.0;
 
    gl_FragColor = color;
 }
@@ -325,6 +327,106 @@ class VertexBatch{
    }
 }
 
+export class WebGLGraphics{
+   gl: WebGLRenderingContext;
+
+   batch: VertexBatch;
+
+   projectionMatrix: Float32Array;
+   modelViewMatrix: Float32Array;
+
+   drawing: boolean = false;
+
+   constructor(gl: WebGLRenderingContext){
+      this.gl = gl;
+
+      this.batch = new VertexBatch(this.gl);
+
+      this.projectionMatrix = new Float32Array([
+         1, 0, 0, 0,
+         0, 1, 0, 0,
+         0, 0, 1, 0,
+         0, 0, 0, 1
+      ]);
+      this.modelViewMatrix = new Float32Array([
+         1, 0, 0, 0,
+         0, 1, 0, 0,
+         0, 0, 1, 0,
+         0, 0, 0, 1
+      ]);
+
+      this.batch = new VertexBatch(this.gl);
+
+      this.updateSize();
+   }
+
+   clear(){
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+   }
+
+   // drawSprite(sprite: Sprite, x: number, y: number, scaleX: number = 1, scaleY: number = 1, rotation: number = 0){
+   //    // this.context.save();
+
+   //    // this.context.translate(x, y);
+   //    // this.context.scale(scaleX, scaleY);
+   //    // this.context.rotate(rotation);
+
+   //    // this.context.drawImage(sprite.image, 
+   //    //    sprite.sourceX, sprite.sourceY, sprite.sourceWidth, sprite.sourceHeight,
+   //    //    - sprite.offsetX, - sprite.offsetY, sprite.width, sprite.height);
+
+   //    // this.context.restore();
+   // }
+
+   // drawSpriteSimple(sprite: Sprite, x: number, y: number){
+   //    // this.context.drawImage(sprite.image, 
+   //    //    sprite.sourceX, sprite.sourceY, sprite.sourceWidth, sprite.sourceHeight,
+   //    //    x - sprite.offsetX, y - sprite.offsetY, sprite.width, sprite.height);
+   // }
+
+   drawRectangle(x: number, y: number, w: number, h: number, fill: boolean){
+      
+   }
+
+   // drawAABB(aabb: AABB, fill: boolean){
+   //    this.drawRectangle(aabb.left, aabb.top, aabb.width, aabb.height, fill);
+   // }
+
+   begin(){
+      if(this.drawing) return;
+      this.drawing = true;
+   }
+
+   end(){
+      if(!this.drawing)
+         return;
+
+      this.flush();
+      this.drawing = false;
+   }
+
+   flush(){
+      if(!this.drawing) return;
+   }
+
+   setCamera(camera: Camera){
+      this.flush();
+      let cameraHeight = camera.height;
+      let cameraWidth = camera.width;//this.canvas.width / this.canvas.height * cameraHeight;
+
+      this.projectionMatrix = new Float32Array([
+         1 / cameraWidth, 0, 0, 2 / cameraWidth,
+         0, 1 / cameraHeight, 0, 2 / cameraHeight,
+         0, 0, 1, 0,
+         0, 0, 0, 1
+      ]);
+   }
+
+   updateSize(){
+      this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+   }
+}
+
 export function initWebgl(canvas: HTMLCanvasElement){
    canvas.width = canvas.offsetWidth;
    canvas.height = canvas.offsetHeight;
@@ -347,33 +449,13 @@ export function initWebgl(canvas: HTMLCanvasElement){
    let projectionUniform = program.getUniformLocation("u_MatrixProjection");
    let textureUniform = program.getUniformLocation("u_Texture");
 
-   // const vertexBuffer = gl.createBuffer();
-
-   // gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
-
-   // let triangleCount = 6;
-   // let triangleData = [
-   //    0, 0, 0,  1, 0, 0, 1,   0, 0,
-   //    0, 1, 0,  0, 1, 0, 1,   0, 1,
-   //    1, 1, 0,  0, 0, 1, 1,   1, 1,
-      
-   //    0, 0, 0,  1, 0, 0, 1,   0, 0,
-   //    1, 1, 0,  0, 0, 1, 1,   1, 1,
-   //    1, 0, 0,  0, 0, 0, 1,   1, 0,
-   // ];
-
-   // gl.bufferData(gl.ARRAY_BUFFER,
-   //    new Float32Array(triangleData),
-   //    gl.STATIC_DRAW);
-
    let texture = resources.loadTexture("/assets/img/Player.png");
 
    const projectionMatrix = new Float32Array([
-      1, 0, 0, 0,
-      0, 1, 0, 0,
+      2, 0, 0, 0,
+      0, -2, 0, 0,
       0, 0, 1, 0,
-      0, 0, 0, 1
+      -1, 1, 0, 1
    ]);
    const modelViewMatrix = new Float32Array([
       1, 0, 0, 0,
@@ -391,11 +473,18 @@ export function initWebgl(canvas: HTMLCanvasElement){
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+      const s = 1 / 8;
+
       // Setup array buffers
       // gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-      batch.color(1, 0, 0, 1); batch.uv(0, 0); batch.vertex(0, 0, 0);
-      batch.color(1, 0, 0, 1); batch.uv(1, 0); batch.vertex(1, 0, 0);
-      batch.color(1, 0, 0, 1); batch.uv(1, 1); batch.vertex(1, 1, 0);
+      batch.color(1, 1, 1, 1); batch.uv(0, 0); batch.vertex(0, 0, 0);
+      batch.color(1, 1, 1, 1); batch.uv(s, 0); batch.vertex(1, 0, 0);
+      batch.color(1, 1, 1, 1); batch.uv(s, s); batch.vertex(1, 1, 0);
+      
+      batch.color(1, 1, 1, 1); batch.uv(0, 0); batch.vertex(0, 0, 0);
+      batch.color(1, 1, 1, 1); batch.uv(s, s); batch.vertex(1, 1, 0);
+      batch.color(1, 1, 1, 1); batch.uv(0, s); batch.vertex(0, 1, 0);
+
       batch.flush();
 
       // Vertex
@@ -419,5 +508,12 @@ export function initWebgl(canvas: HTMLCanvasElement){
 
    drawScene();
 
+   window.addEventListener("resize", ()=>{
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+
+      drawScene();
+   });
+   
    (window as any).drawScene = drawScene;
 }
