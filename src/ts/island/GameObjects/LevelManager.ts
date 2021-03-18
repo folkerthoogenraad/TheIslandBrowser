@@ -54,7 +54,7 @@ export class LevelManager extends GameObject{
       this.spawn = this.scene.findObject(object => object instanceof PlayerSpawnGameObject) as PlayerSpawnGameObject|undefined;
       this.finish = this.scene.findObject(object => object instanceof PlayerFinishGameObject) as PlayerFinishGameObject|undefined;
 
-      this.finish!.interactable.onInteract.listen(interactor => {
+      this.finish?.interactable.onInteract.listen(interactor => {
          if(interactor.gameObject instanceof PlayerGameObject){
             this.completed = true;
             this.stop();
@@ -115,8 +115,6 @@ export class LevelManager extends GameObject{
       if(this.running && !this.scene.paused){
          this.time += delta;
       }
-
-      console.log(this.time);
 
       if(!this.player?.health.alive){
          this.stop();
