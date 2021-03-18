@@ -25,7 +25,8 @@ varying highp vec2 v_UV;
 uniform sampler2D u_Texture;
 
 void main() {
-   highp vec4 color = texture2D(u_Texture, v_UV) * v_Color;
+   // highp vec4 color = texture2D(u_Texture, v_UV) * v_Color;
+   highp vec4 color = texture2D(u_Texture, v_UV) * vec4(1.0, 0.0, 0.0, 1.0);
 
    // Low color precision :)
    // color.r = floor(color.r * 8.0) / 8.0;
