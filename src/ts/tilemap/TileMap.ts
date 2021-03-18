@@ -3,16 +3,33 @@ import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { AABB } from "math/AABB";
 import { TileCollider } from "math/collision/TileCollider";
-import { getSpriteFromTileset, TiledMap, TiledObject, TiledObjectLayer, TiledObjectLayerType, TiledTileLayer, TiledTileLayerType, TiledColliderLayerName, TiledTileset } from "./TiledMap";
+import { Color } from "util/Color";
+import { asyncLoadImage } from "util/Temp";
+import { getSpriteFromTileset, TiledMap, TiledObject, TiledObjectLayer, TiledObjectLayerType, TiledTileLayer, TiledTileLayerType, TiledColliderLayerName, TiledImageLayer, TiledTileset, TiledImageLayerType } from "./TiledMap";
 
 type TilemapObjectLoader = (object: TiledObject) => void;
 
-export class TilemapTileLayer{
+export class TilemapLayer{
+   tilemap: TileMap;
+
+   constructor(tilemap: TileMap){
+      this.tilemap = tilemap;
+   }
+   
+   update(delta: number, bounds: AABB){
+
+   }
+   draw(graphics: Graphics, bounds: AABB){
+   }
+}
+
+export class TilemapTileLayer extends TilemapLayer{
    width: number;
    height: number;
    tiles: (Animation|undefined)[];
 
-   constructor(width: number, height: number){
+   constructor(tilemap: TileMap, width: number, height: number){
+      super(tilemap);
       this.width = width;
       this.height = height;
 
@@ -32,7 +49,10 @@ export class TilemapTileLayer{
       this.tiles[index] = animation;
    }
 
-   update(delta: number, tileWidth: number, tileHeight: number, bounds: AABB){
+   update(delta: number, bounds: AABB){
+      let tileWidth = this.tilemap.tileWidth;
+      let tileHeight = this.tilemap.tileHeight;
+
       let startX = Math.floor(Math.max(0, bounds.left / tileWidth));
       let endX = Math.floor(Math.min(this.width, bounds.right / tileWidth + 1));
 
@@ -49,7 +69,10 @@ export class TilemapTileLayer{
       }
    }
    
-   draw(graphics: Graphics, tileWidth: number, tileHeight: number, bounds: AABB){
+   draw(graphics: Graphics, bounds: AABB){
+      let tileWidth = this.tilemap.tileWidth;
+      let tileHeight = this.tilemap.tileHeight;
+
       let startX = Math.floor(Math.max(0, bounds.left / tileWidth));
       let endX = Math.floor(Math.min(this.width, bounds.right / tileWidth + 1));
 
@@ -67,13 +90,30 @@ export class TilemapTileLayer{
    }
 }
 
-export class TilemapCollisionLayer{
+export class TilemapImageLayer extends TilemapLayer {
+   image: Sprite|undefined;
+
+   constructor(tilemap: TileMap, image?: Sprite){
+      super(tilemap);
+      this.image = image;
+   }
+
+   
+   draw(graphics: Graphics, bounds: AABB){
+      if(this.image === undefined) return;
+
+      graphics.drawSprite(this.image, bounds.centerX - this.image.width / 2, bounds.centerY - this.image.height / 2)
+   }
+}
+
+export class TilemapCollisionLayer extends TilemapLayer{
    width: number;
    height: number;
    tiles: boolean[];
-   tilemap: TileMap;
 
    constructor(tilemap: TileMap, width: number, height: number){
+      super(tilemap);
+
       this.width = width;
       this.height = height;
 
@@ -130,7 +170,7 @@ export class TilemapCollisionLayer{
       let startY = Math.floor(Math.max(0, bounds.top / tileHeight));
       let endY = Math.floor(Math.min(this.height, bounds.bottom / tileHeight + 1));
 
-      graphics.setColor("rgba(255, 90, 20, 0.8)");
+      graphics.setColor(255, 90, 20, 0.8);
 
       let collider = new TileCollider();
       const thickness = 2;
@@ -164,9 +204,9 @@ export class TileMap {
    tileWidth: number;
    tileHeight: number;
 
-   backgroundColor: string = "";
+   backgroundColor: Color = new Color(1, 1, 1, 1);
 
-   layers: TilemapTileLayer[];
+   layers: TilemapLayer[];
    colliders: TilemapCollisionLayer[];
 
    constructor(width: number, height: number, tileWidth: number, tileHeight: number){
@@ -179,22 +219,22 @@ export class TileMap {
    }
 
    draw(graphics: Graphics, bounds: AABB){
-      graphics.setColor(this.backgroundColor);
+      graphics.setColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
       graphics.drawRectangle(0, 0, this.width * this.tileWidth, this.height * this.tileHeight, true);
       
-      this.layers.forEach(layer => layer.draw(graphics, this.tileWidth, this.tileHeight, bounds));
+      this.layers.forEach(layer => layer.draw(graphics, bounds));
       // this.colliders.forEach(layer => layer.drawDebug(graphics, this.tileWidth, this.tileHeight, bounds));
    }
 
    // TODO maybe more like batch update every x frames or devide up the work somehow over muptiple frames
    update(delta: number, bounds: AABB){      
-      this.layers.forEach(layer => layer.update(delta, this.tileWidth, this.tileHeight, bounds));
+      this.layers.forEach(layer => layer.update(delta, bounds));
    }
 
    public static fromTiledMap(map: TiledMap, loader: TilemapObjectLoader){
       let tilemap = new TileMap(map.width, map.height, map.tilewidth, map.tileheight);
 
-      tilemap.backgroundColor = map.backgroundcolor;
+      tilemap.backgroundColor = Color.fromHex(map.backgroundcolor)!;
       
       // TILESETS
       let tilesets: {set: TiledTileset, sheet: SpriteSheet}[] = [];
@@ -223,8 +263,8 @@ export class TileMap {
          });
       });
 
-      // TILE LAYERS
       map.layers.forEach(layer => {
+         // TILE LAYERS
          if(layer.type === TiledTileLayerType && layer.name !== TiledColliderLayerName){
             let tileLayer = layer as TiledTileLayer;
 
@@ -232,7 +272,7 @@ export class TileMap {
                return;
             }
 
-            let tilemapLayer = new TilemapTileLayer(tileLayer.width, tileLayer.height);
+            let tilemapLayer = new TilemapTileLayer(tilemap, tileLayer.width, tileLayer.height);
 
             for(let i = 0; i < tileLayer.data.length; i++){
                let tileIndex = tileLayer.data[i];
@@ -262,7 +302,8 @@ export class TileMap {
             tilemap.layers.push(tilemapLayer);
          }
          
-         if(layer.type === TiledTileLayerType && layer.name === TiledColliderLayerName){
+         // Collision Layers
+         else if(layer.type === TiledTileLayerType && layer.name === TiledColliderLayerName){
             let tileLayer = layer as TiledTileLayer;
             
             let colliderLayer = new TilemapCollisionLayer(tilemap, tileLayer.width, tileLayer.height);
@@ -274,15 +315,31 @@ export class TileMap {
 
             tilemap.colliders.push(colliderLayer);
          }
-      });
 
-      // OBJECT LAYER
-      map.layers.forEach(layer => {
-         if(layer.type === TiledObjectLayerType){
+         else if(layer.type === TiledImageLayerType){
+            let tileLayer = layer as TiledImageLayer;
+
+            let imageLayer = new TilemapImageLayer(tilemap);
+            
+            asyncLoadImage("/assets/levels/" + tileLayer.image).then(result => {
+               imageLayer.image = new Sprite(result);
+            });
+
+            tilemap.layers.push(imageLayer);
+         }
+         
+         // Object layers
+         else if(layer.type === TiledObjectLayerType){
             let objLayer = layer as TiledObjectLayer;
             objLayer.objects.forEach(loader);
          }
+
+         // Uh oh
+         else{
+            console.error("Unknown layer type " + layer.type);
+         }
       });
+
 
       return tilemap;
    }

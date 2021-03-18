@@ -1,3 +1,4 @@
+import { Canvas2DGraphics } from "graphics/canvas/Canvas2DGraphics";
 import { Graphics } from "graphics/Graphics";
 import { Scene } from "scene/Scene";
 import { now } from "util/Time";
@@ -22,7 +23,7 @@ export class Game{
    debugSettings: DebugSettings;
 
    constructor(canvas: HTMLCanvasElement){
-      this.graphics = new Graphics(canvas);
+      this.graphics = new Canvas2DGraphics(canvas);
       this.input = new Input(canvas);
       this.canvas = canvas;
 
@@ -69,10 +70,12 @@ export class Game{
       }
       this.scene?.update(delta);
 
-      this.graphics.reset();
-      this.graphics.clearScreen();
+      this.graphics.begin();
+      this.graphics.clear();
 
       this.scene?.draw(this.graphics);
+
+      this.graphics.end();
 
       this.input.flush();
    }

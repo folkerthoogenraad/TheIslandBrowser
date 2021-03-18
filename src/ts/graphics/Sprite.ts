@@ -1,7 +1,8 @@
 import { Animation } from "./Animation";
+import { Texture } from "./Texture";
 
 export class Sprite{
-   image: CanvasImageSource;
+   texture: Texture;
 
    offsetX: number = 0;
    offsetY: number = 0;
@@ -11,11 +12,11 @@ export class Sprite{
    sourceWidth: number = 0;
    sourceHeight: number = 0;
    
-   constructor(image: CanvasImageSource){
-      this.image = image;
+   constructor(texture: Texture){
+      this.texture = texture;
 
-      this.sourceWidth = image.width as number;
-      this.sourceHeight = image.height as number;
+      this.sourceWidth = texture.width as number;
+      this.sourceHeight = texture.height as number;
    }
 
    get width() { return this.sourceWidth; }
@@ -36,14 +37,14 @@ export class Sprite{
 }
 
 export class SpriteSheet{
-   image: CanvasImageSource;
+   texture: Texture;
 
-   constructor(image: CanvasImageSource){
-      this.image = image;
+   constructor(texture: Texture){
+      this.texture = texture;
    }
 
    getSprite(x: number, y: number, w: number, h: number){
-      let sprite = new Sprite(this.image);
+      let sprite = new Sprite(this.texture);
 
       sprite.sourceX = x;
       sprite.sourceY = y;
@@ -57,7 +58,7 @@ export class SpriteSheet{
       let animation = new Animation();
 
       for(let i = 0; i < count; i++){
-         let sprite = new Sprite(this.image);
+         let sprite = new Sprite(this.texture);
    
          sprite.sourceX = x + i * w;
          sprite.sourceY = y;

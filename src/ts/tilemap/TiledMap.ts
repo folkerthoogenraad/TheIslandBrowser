@@ -1,6 +1,7 @@
 import { SpriteSheet } from "graphics/Sprite";
 
 export const TiledObjectLayerType = "objectgroup";
+export const TiledImageLayerType = "imagelayer";
 export const TiledTileLayerType = "tilelayer";
 
 export const TiledColliderLayerName = "Colliders";
@@ -36,6 +37,9 @@ export interface TiledTileLayer extends TiledLayer {
 }
 export interface TiledObjectLayer extends TiledLayer{
    objects: TiledObject[];
+}
+export interface TiledImageLayer extends TiledLayer{
+   image: string;
 }
 export interface TiledObject {
    x: number;

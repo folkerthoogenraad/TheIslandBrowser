@@ -60,11 +60,20 @@ export class Physics{
          body.transform.position.y += body.velocity.y * delta;
       });
 
+      let collisionMap = new Map<number, number>();
+
+      let addToCollisionMap = (selfIndex: number, otherIndex: number) => {
+         collisionMap.set(Math.min(selfIndex, otherIndex), Math.max(selfIndex, otherIndex));
+      }
+
       // Unstuck all the bodies
       let tileCollider = new TileCollider();
       let tileAABB = new AABB();
       let tilePosition = new Vector2();
 
+      // =============================== //
+      // Tilemap collision
+      // =============================== //
       this.bodies.forEach(body => {
          if(body.kinematic) return;
 
@@ -109,29 +118,37 @@ export class Physics{
          });
       });
 
+      
+      // =============================== //
+      // Normal collisions
+      // =============================== //
       // TODO broadphase narrow phase stuff :)
       // Maybe start with sweep and prune
-      this.bodies.forEach(body => {
-         if(body.solid) return;
-         if(body.kinematic) return;
+      this.bodies.forEach((self, selfIndex) => {
+         if(self.kinematic) return;
 
-         this.bodies.forEach(other => {
+         this.bodies.forEach((other, otherIndex) => {
+            if(self === other) return;
             if(!other.solid) return;
    
-            let bbox = body.boundingBox;
+            let bbox = self.boundingBox;
             let otherbbox = other.boundingBox;
 
             if(!bbox.overlaps(otherbbox)) return;
 
+            if(self.useDynamicCollisions && other.useDynamicCollisions){
+               addToCollisionMap(selfIndex, otherIndex);
+            }
+
             let unstuckDist = unstuck(
-               body.collider,
+               self.collider,
                other.collider,
-               other.transform.position.clone().sub(body.transform.position),
-               body.velocity); // TODO relative velocity
+               other.transform.position.clone().sub(self.transform.position),
+               self.velocity); // TODO relative velocity
 
             if(unstuckDist !== undefined){
-               body.transform.position.add(unstuckDist);
-               body.unstuckDistance.add(unstuckDist);
+               self.transform.position.add(unstuckDist);
+               self.unstuckDistance.add(unstuckDist);
             }
 
          });
@@ -167,11 +184,18 @@ export class Physics{
             if(!other.useDynamicCollisions) continue;
 
             if(bbox.overlaps(other.boundingBox)){
-               body.onCollision.emit(other);
-               other.onCollision.emit(body);
+               addToCollisionMap(i, j);
             }
          }
       }
+
+      collisionMap.forEach((selfIndex, otherIndex) => {
+         let self = this.bodies[selfIndex];
+         let other = this.bodies[otherIndex];
+
+         self.onCollision.emit(other);
+         other.onCollision.emit(self);
+      });
    }
 
    drawDebug(graphics: Graphics){
@@ -181,7 +205,7 @@ export class Physics{
          layer.drawDebug(graphics, layer.tilemap.tileWidth, layer.tilemap.tileHeight, new AABB(0, 0, 1000, 1000));
       });
       
-      graphics.setColor("rgba(255,0,0, 0.6)");
+      graphics.setColor(255,0,0, 0.6);
       this.bodies.forEach(body => {
          if(!body.solid) return;
          
@@ -189,7 +213,7 @@ export class Physics{
       });
       
       
-      graphics.setColor("rgba(0,255,0, 0.6)");
+      graphics.setColor(0,255,0, 0.6);
       this.bodies.forEach(body => {
          if(body.solid) return;
          let collider = body.boundingBox;
@@ -197,7 +221,7 @@ export class Physics{
          graphics.drawAABB(collider, true);
       });
       
-      graphics.setColor("rgba(0,0,255, 0.6)");
+      graphics.setColor(0,0,255, 0.6);
       this.bodies.forEach(body => {
          let transform = body.transform;
          

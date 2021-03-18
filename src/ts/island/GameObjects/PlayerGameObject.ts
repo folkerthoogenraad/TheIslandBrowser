@@ -69,7 +69,8 @@ export class PlayerGameObject extends GameObject{
    dashTimer: number = 0;
    dashTimeout: number = 0;
    dashSavedSpeed: number = 0;
-   dashSavedAddition: number = 5;
+   dashSavedMaxSpeed: number = 2 * 60;
+   dashSavedAddition: number = (this.dashSavedMaxSpeed - this.moveSpeed) / 3; // In three dashes until max speed 
    dashAnimationTimer: number = 0;
 
    wallJumpTimer: number = 0;
@@ -179,6 +180,8 @@ export class PlayerGameObject extends GameObject{
    fixedUpdate(delta: number){
       super.fixedUpdate(delta);
 
+      console.log(this.body.velocity.x);
+
       if(!this.grounded && this.body.collidedBottom && this.groundLeaveTime > 0.8){
          this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y + 8, this.effectLand);
       }
@@ -277,7 +280,14 @@ export class PlayerGameObject extends GameObject{
          
          if(this.dashTimer < 0){
             this.dashing = false;
-            this.body.velocity.x = this.dashSavedSpeed + this.facing * this.dashSavedAddition;
+            
+            this.body.velocity.x = this.dashSavedSpeed;
+
+            this.accelerate(this.facing, this.dashSavedMaxSpeed, this.dashSavedAddition);
+
+            if(this.body.velocity.x * this.facing < this.dashSavedMaxSpeed){
+
+            }
 
             this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.effectDash, this.facing);
          }
