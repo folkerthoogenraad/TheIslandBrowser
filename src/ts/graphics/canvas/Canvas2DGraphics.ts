@@ -16,15 +16,18 @@ export class Canvas2DGraphics extends Graphics{
       this.updateSize();
    }
 
-   reset(){
+   begin(){
       this.context.resetTransform();
+   }
+   end(){
+      
    }
 
    clear(){
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
    }
 
-   drawSprite(sprite: Sprite, x: number, y: number, scaleX: number = 1, scaleY: number = 1, rotation: number = 0){
+   drawSpriteRaw(sprite: Sprite, x: number, y: number, scaleX: number = 1, scaleY: number = 1, rotation: number = 0){
       this.context.save();
 
       this.context.translate(x, y);
@@ -71,8 +74,8 @@ export class Canvas2DGraphics extends Graphics{
       this.context.translate(-(camera.center.x - cameraWidth / 2), -(camera.center.y - cameraHeight / 2));
    }
 
-   setColor(color: string){
-      this.color = color;
+   setColorRaw(r: number, g: number, b: number, a: number){
+      this.color = `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
    }
    getColor(){
       return this.color;

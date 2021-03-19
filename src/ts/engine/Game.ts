@@ -70,10 +70,12 @@ export class Game{
       }
       this.scene?.update(delta);
 
-      this.graphics.reset();
-      this.graphics.clearScreen();
+      this.graphics.begin();
+      this.graphics.clear();
 
       this.scene?.draw(this.graphics);
+
+      this.graphics.end();
 
       this.input.flush();
    }

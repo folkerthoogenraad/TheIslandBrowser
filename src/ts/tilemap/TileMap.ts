@@ -3,6 +3,7 @@ import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { AABB } from "math/AABB";
 import { TileCollider } from "math/collision/TileCollider";
+import { Color } from "util/Color";
 import { asyncLoadImage } from "util/Temp";
 import { getSpriteFromTileset, TiledMap, TiledObject, TiledObjectLayer, TiledObjectLayerType, TiledTileLayer, TiledTileLayerType, TiledColliderLayerName, TiledImageLayer, TiledTileset, TiledImageLayerType } from "./TiledMap";
 
@@ -169,7 +170,7 @@ export class TilemapCollisionLayer extends TilemapLayer{
       let startY = Math.floor(Math.max(0, bounds.top / tileHeight));
       let endY = Math.floor(Math.min(this.height, bounds.bottom / tileHeight + 1));
 
-      graphics.setColor("rgba(255, 90, 20, 0.8)");
+      graphics.setColor(255, 90, 20, 0.8);
 
       let collider = new TileCollider();
       const thickness = 2;
@@ -203,7 +204,7 @@ export class TileMap {
    tileWidth: number;
    tileHeight: number;
 
-   backgroundColor: string = "";
+   backgroundColor: Color = new Color(1, 1, 1, 1);
 
    layers: TilemapLayer[];
    colliders: TilemapCollisionLayer[];
@@ -218,7 +219,7 @@ export class TileMap {
    }
 
    draw(graphics: Graphics, bounds: AABB){
-      graphics.setColor(this.backgroundColor);
+      graphics.setColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
       graphics.drawRectangle(0, 0, this.width * this.tileWidth, this.height * this.tileHeight, true);
       
       this.layers.forEach(layer => layer.draw(graphics, bounds));
@@ -233,7 +234,7 @@ export class TileMap {
    public static fromTiledMap(map: TiledMap, loader: TilemapObjectLoader){
       let tilemap = new TileMap(map.width, map.height, map.tilewidth, map.tileheight);
 
-      tilemap.backgroundColor = map.backgroundcolor;
+      tilemap.backgroundColor = Color.fromHex(map.backgroundcolor)!;
       
       // TILESETS
       let tilesets: {set: TiledTileset, sheet: SpriteSheet}[] = [];

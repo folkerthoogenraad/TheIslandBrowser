@@ -181,7 +181,7 @@ export class Physics{
          layer.drawDebug(graphics, layer.tilemap.tileWidth, layer.tilemap.tileHeight, new AABB(0, 0, 1000, 1000));
       });
       
-      graphics.setColor("rgba(255,0,0, 0.6)");
+      graphics.setColor(255,0,0, 0.6);
       this.bodies.forEach(body => {
          if(!body.solid) return;
          
@@ -189,7 +189,7 @@ export class Physics{
       });
       
       
-      graphics.setColor("rgba(0,255,0, 0.6)");
+      graphics.setColor(0,255,0, 0.6);
       this.bodies.forEach(body => {
          if(body.solid) return;
          let collider = body.boundingBox;
@@ -197,7 +197,7 @@ export class Physics{
          graphics.drawAABB(collider, true);
       });
       
-      graphics.setColor("rgba(0,0,255, 0.6)");
+      graphics.setColor(0,0,255, 0.6);
       this.bodies.forEach(body => {
          let transform = body.transform;
          
