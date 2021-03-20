@@ -1,7 +1,8 @@
+import { Game } from "engine/Game";
 import { Graphics } from "graphics/Graphics";
 import { Sprite } from "graphics/Sprite";
 import { InteractableComponent } from "island/Components/InteractableComponent";
-import Resources from "island/Resources";
+import IslandResources from "island/IslandResources";
 import { AABB } from "math/AABB";
 import { BoxCollider } from "math/collision/BoxCollider";
 import { Rigidbody } from "scene/components/Rigidbody";
@@ -13,7 +14,7 @@ export class PlayerFinishGameObject extends GameObject{
    body: Rigidbody;
    interactable: InteractableComponent;
 
-   sprite: Sprite;
+   sprite!: Sprite;
 
    constructor(aabb: AABB){
       super();
@@ -28,7 +29,12 @@ export class PlayerFinishGameObject extends GameObject{
       this.body.useDynamicCollisions = true;
       this.body.collider = BoxCollider.fromAABB(aabb);
       
-      this.sprite = Resources.sheetObjects.getSprite(112, 0, 16, 16);
+   }
+
+   init(game: Game){
+      super.init(game);
+
+      this.sprite = game.resources.loadSpriteSheet(IslandResources.SheetObjects).getSprite(112, 0, 16, 16);
    }
    
    draw(graphics: Graphics){

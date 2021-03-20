@@ -46,10 +46,10 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
    let canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
-   initWebgl(canvas);
+   // initWebgl(canvas);
 
-   return;
-/*
+   // return;
+
    let game = new Game(canvas);
    
    let scene = new Scene();
@@ -90,5 +90,5 @@ document.addEventListener("DOMContentLoaded", async ()=>{
    game.scene = scene;
 
    game.run();
-   */
+   
 });

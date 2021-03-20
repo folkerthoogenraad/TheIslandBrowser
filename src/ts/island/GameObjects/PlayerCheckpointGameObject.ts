@@ -1,8 +1,10 @@
+import { Game } from "engine/Game";
 import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
 import { InteractableComponent } from "island/Components/InteractableComponent";
 import { InteractorComponent } from "island/Components/InteractorComponent";
-import Resources from "island/Resources";
+import IslandResources from "island/IslandResources";
+import Resources from "island/IslandResources";
 import { AABB } from "math/AABB";
 import { BoxCollider } from "math/collision/BoxCollider";
 import { Rigidbody } from "scene/components/Rigidbody";
@@ -15,10 +17,10 @@ export class PlayerCheckpointGameObject extends GameObject{
    body: Rigidbody;
    interactable: InteractableComponent;
 
-   currentAnimation: Animation;
+   currentAnimation!: Animation;
 
-   closedAnimation: Animation;
-   openAnimation: Animation;
+   closedAnimation!: Animation;
+   openAnimation!: Animation;
 
    constructor(aabb: AABB){
       super();
@@ -34,10 +36,17 @@ export class PlayerCheckpointGameObject extends GameObject{
       // Interactables and shit
       this.body.useDynamicCollisions = true;
       this.body.collider = BoxCollider.fromAABB(aabb);
+   }
 
-      this.closedAnimation = Resources.sheetObjects.getAnimation(0, 112, 16, 16, 1);
-      this.openAnimation = Resources.sheetObjects.getAnimation(16, 112, 16, 16, 4);
+   
+   init(game: Game){
+      super.init(game);
+      
+      let objectSheet = game.resources.loadSpriteSheet(IslandResources.SheetObjects);
 
+      this.closedAnimation = objectSheet.getAnimation(0, 112, 16, 16, 1);
+      this.openAnimation = objectSheet.getAnimation(16, 112, 16, 16, 4);
+      
       this.currentAnimation = this.closedAnimation;
    }
 

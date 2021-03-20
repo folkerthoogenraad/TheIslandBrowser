@@ -1,8 +1,10 @@
+import { Game } from "engine/Game";
 import { Graphics } from "graphics/Graphics";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { InteractableComponent } from "island/Components/InteractableComponent";
 import { InteractorComponent } from "island/Components/InteractorComponent";
-import Resources from "island/Resources";
+import IslandResources from "island/IslandResources";
+import Resources from "island/IslandResources";
 import { AABB } from "math/AABB";
 import { BoxCollider } from "math/collision/BoxCollider";
 import { Rigidbody } from "scene/components/Rigidbody";
@@ -14,8 +16,8 @@ export class ChestGameObject extends GameObject{
    body: Rigidbody;
    interactable: InteractableComponent;
 
-   closed: Sprite;
-   open: Sprite;
+   closed!: Sprite;
+   open!: Sprite;
 
    isOpen: boolean = false;
 
@@ -32,9 +34,15 @@ export class ChestGameObject extends GameObject{
 
       this.body.collider = BoxCollider.fromAABB(aabb);
       this.body.useDynamicCollisions = true;
+   }
 
-      this.closed = Resources.sheetObjects.getSprite(0, 64, 16, 16);
-      this.open = Resources.sheetObjects.getSprite(16, 64, 16, 16);
+   init(game: Game){
+      super.init(game);
+      
+      let objectSheet = game.resources.loadSpriteSheet(IslandResources.SheetObjects);
+
+      this.closed = objectSheet.getSprite(0, 64, 16, 16);
+      this.open = objectSheet.getSprite(16, 64, 16, 16);
    }
 
    onInteract(interactor: InteractorComponent){

@@ -1,5 +1,7 @@
 import { Canvas2DGraphics } from "graphics/canvas/Canvas2DGraphics";
+import { Canvas2DResourceManager } from "graphics/canvas/Canvas2DResourceManager";
 import { Graphics } from "graphics/Graphics";
+import { ResourceManager } from "graphics/ResourceManager";
 import { Scene } from "scene/Scene";
 import { now } from "util/Time";
 import { DebugSettings } from "./DebugSettings";
@@ -18,14 +20,18 @@ export class Game{
    scene?: Scene;
    graphics: Graphics;
    input: Input;
+   resources: ResourceManager;
    canvas: HTMLCanvasElement;
 
    debugSettings: DebugSettings;
 
    constructor(canvas: HTMLCanvasElement){
-      this.graphics = new Canvas2DGraphics(canvas);
-      this.input = new Input(canvas);
       this.canvas = canvas;
+      this.input = new Input(canvas);
+
+      // TODO swap out to WebGL
+      this.graphics = new Canvas2DGraphics(canvas);
+      this.resources = new Canvas2DResourceManager();
 
       window.addEventListener("resize", () => this.updateSize());
       this.updateSize();

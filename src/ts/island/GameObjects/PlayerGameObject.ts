@@ -1,12 +1,10 @@
-import { Mouse } from "engine/Input";
+import { Game } from "engine/Game";
 import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
-import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { HealthComponent } from "island/Components/HealthComponent";
-import { InteractableComponent } from "island/Components/InteractableComponent";
 import { InteractorComponent } from "island/Components/InteractorComponent";
 import { PlayerInputComponent } from "island/Components/PlayerInputComponent";
-import Resources from "island/Resources";
+import IslandResources from "island/IslandResources";
 import { AABB } from "math/AABB";
 import { BoxCollider } from "math/collision/BoxCollider";
 import { Vector2 } from "math/Vector2";
@@ -15,21 +13,21 @@ import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
 
 export class PlayerGameObject extends GameObject{
-   currentAnimation: Animation;
+   currentAnimation!: Animation;
 
-   idleAnimation: Animation;
-   walkAnimation: Animation;
-   jumpAnimation: Animation;
-   fallAnimation: Animation;
-   dashAnimation: Animation;
-   wallAnimation: Animation;
+   idleAnimation!: Animation;
+   walkAnimation!: Animation;
+   jumpAnimation!: Animation;
+   fallAnimation!: Animation;
+   dashAnimation!: Animation;
+   wallAnimation!: Animation;
 
-   effectJump: Animation;
-   effectLand: Animation;
-   effectWalljump: Animation;
-   effectDoubleJump: Animation;
+   effectJump!: Animation;
+   effectLand!: Animation;
+   effectWalljump!: Animation;
+   effectDoubleJump!: Animation;
    
-   effectDash: Animation;
+   effectDash!: Animation;
 
    transform: Transform;
    body: Rigidbody;
@@ -89,26 +87,6 @@ export class PlayerGameObject extends GameObject{
    constructor(){
       super();
 
-      let sheet = Resources.sheetPlayer;
-
-      this.idleAnimation = sheet.getAnimation(0, 0, 16, 16, 1).center();
-      this.walkAnimation = sheet.getAnimation(0, 16, 16, 16, 4).center();
-      this.fallAnimation = sheet.getAnimation(0, 32, 16, 16, 2).center();
-      this.jumpAnimation = sheet.getAnimation(0, 48, 16, 16, 2).center();
-      this.dashAnimation = sheet.getAnimation(0, 64, 16, 16, 2).center();
-      this.wallAnimation = sheet.getAnimation(0, 80, 16, 16, 2).center();
-
-      this.effectJump = Resources.sheetEffects.getAnimation(0, 0, 16, 16, 3).setOffset(8, 16);
-      this.effectWalljump = Resources.sheetEffects.getAnimation(0, 16, 16, 16, 3).setOffset(0, 8);
-      this.effectLand = Resources.sheetEffects.getAnimation(0, 32, 16, 16, 3).setOffset(8, 16);
-
-      this.effectDash = Resources.sheetEffects.getAnimation(112, 0, 16, 16, 1).setOffset(8, 8);
-      this.effectDash.frameRate = 4;
-
-      this.effectDoubleJump = Resources.sheetEffects.getAnimation(0, 48, 16, 16, 4).setOffset(8, 8);
-
-      this.currentAnimation = this.idleAnimation;
-
       this.transform = this.addComponent(new Transform());
       this.body = this.addComponent(new Rigidbody());
       this.input = this.addComponent(new PlayerInputComponent());
@@ -123,6 +101,31 @@ export class PlayerGameObject extends GameObject{
          new Vector2(10, 13),
          new Vector2(5, 5)
       );
+   }
+
+   init(game: Game){
+      super.init(game);
+
+      let sheet = game.resources.loadSpriteSheet(IslandResources.SheetPlayer);
+      let sheetEffects = game.resources.loadSpriteSheet(IslandResources.SheetEffects);
+      
+      this.idleAnimation = sheet.getAnimation(0, 0, 16, 16, 1).center();
+      this.walkAnimation = sheet.getAnimation(0, 16, 16, 16, 4).center();
+      this.fallAnimation = sheet.getAnimation(0, 32, 16, 16, 2).center();
+      this.jumpAnimation = sheet.getAnimation(0, 48, 16, 16, 2).center();
+      this.dashAnimation = sheet.getAnimation(0, 64, 16, 16, 2).center();
+      this.wallAnimation = sheet.getAnimation(0, 80, 16, 16, 2).center();
+
+      this.effectJump = sheetEffects.getAnimation(0, 0, 16, 16, 3).setOffset(8, 16);
+      this.effectWalljump = sheetEffects.getAnimation(0, 16, 16, 16, 3).setOffset(0, 8);
+      this.effectLand = sheetEffects.getAnimation(0, 32, 16, 16, 3).setOffset(8, 16);
+
+      this.effectDash = sheetEffects.getAnimation(112, 0, 16, 16, 1).setOffset(8, 8);
+      this.effectDash.frameRate = 4;
+
+      this.effectDoubleJump = sheetEffects.getAnimation(0, 48, 16, 16, 4).setOffset(8, 8);
+
+      this.currentAnimation = this.idleAnimation;
    }
 
    _fixedUpdate(delta: number){
