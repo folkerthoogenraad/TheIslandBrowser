@@ -1,5 +1,6 @@
 import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
+import { ResourceManager } from "graphics/ResourceManager";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { AABB } from "math/AABB";
 import { TileCollider } from "math/collision/TileCollider";
@@ -102,7 +103,7 @@ export class TilemapImageLayer extends TilemapLayer {
    draw(graphics: Graphics, bounds: AABB){
       if(this.image === undefined) return;
 
-      graphics.drawSprite(this.image, bounds.centerX - this.image.width / 2, bounds.centerY - this.image.height / 2)
+      graphics.drawSpriteSimple(this.image, bounds.centerX - this.image.width / 2, bounds.centerY - this.image.height / 2)
    }
 }
 
@@ -222,6 +223,8 @@ export class TileMap {
       graphics.setColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
       graphics.drawRectangle(0, 0, this.width * this.tileWidth, this.height * this.tileHeight, true);
       
+      graphics.setColor(1, 1, 1, 1);
+      
       this.layers.forEach(layer => layer.draw(graphics, bounds));
       // this.colliders.forEach(layer => layer.drawDebug(graphics, this.tileWidth, this.tileHeight, bounds));
    }
@@ -231,7 +234,8 @@ export class TileMap {
       this.layers.forEach(layer => layer.update(delta, bounds));
    }
 
-   public static fromTiledMap(map: TiledMap, loader: TilemapObjectLoader){
+   public static fromTiledMap(map: TiledMap, resourceManager: ResourceManager, loader: TilemapObjectLoader){
+      const RootFolder = "assets/levels/";
       let tilemap = new TileMap(map.width, map.height, map.tilewidth, map.tileheight);
 
       tilemap.backgroundColor = Color.fromHex(map.backgroundcolor)!;
@@ -241,7 +245,8 @@ export class TileMap {
       let tiles: { [key: number]: Animation } = {};
       
       map.tilesets.forEach(set => {
-         let sheet = SpriteSheet.fromHTML(set.name);
+         // let sheet = SpriteSheet.fromHTML(set.name);
+         let sheet = resourceManager.loadSpriteSheet(RootFolder + set.image);
          tilesets.push({
             set,
             sheet
@@ -321,10 +326,8 @@ export class TileMap {
 
             let imageLayer = new TilemapImageLayer(tilemap);
             
-            asyncLoadImage("/assets/levels/" + tileLayer.image).then(result => {
-               imageLayer.image = new Sprite(result);
-            });
-
+            imageLayer.image = resourceManager.loadSpriteSheet(RootFolder + tileLayer.image).getSprite(0, 0, 640, 360);
+            
             tilemap.layers.push(imageLayer);
          }
          
@@ -344,11 +347,11 @@ export class TileMap {
       return tilemap;
    }
 
-   public static async fromTiledMapDownload(file: string, loader: TilemapObjectLoader){
+   public static async fromTiledMapDownload(file: string, resourceManager: ResourceManager, loader: TilemapObjectLoader){
       let result = await fetch(file);
       let d = await result.json();
 
-      return this.fromTiledMap(d as TiledMap, loader);
+      return this.fromTiledMap(d as TiledMap, resourceManager, loader);
    }
 
    get pixelWidth(){

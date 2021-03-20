@@ -183,8 +183,6 @@ export class PlayerGameObject extends GameObject{
    fixedUpdate(delta: number){
       super.fixedUpdate(delta);
 
-      console.log(this.body.velocity.x);
-
       if(!this.grounded && this.body.collidedBottom && this.groundLeaveTime > 0.8){
          this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y + 8, this.effectLand);
       }

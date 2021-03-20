@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
    
    let scene = new Scene();
 
-   scene.tilemap = await TileMap.fromTiledMapDownload("assets/levels/level4.json", (obj) => {
+   scene.tilemap = await TileMap.fromTiledMapDownload("assets/levels/level4.json", game.resources, (obj) => {
       if(obj.type === "Collider" || obj.type === "PlatformCollider"){
          scene.addGameObject(new ColliderGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
       }

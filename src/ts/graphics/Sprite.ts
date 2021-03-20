@@ -11,6 +11,11 @@ export class Sprite{
    sourceY: number = 0;
    sourceWidth: number = 0;
    sourceHeight: number = 0;
+
+   get sourceLeft() { return this.sourceX;}
+   get sourceTop() { return this.sourceY;}
+   get sourceRight() { return this.sourceX + this.sourceWidth;}
+   get sourceBottom() { return this.sourceY + this.sourceHeight;}
    
    constructor(texture: Texture){
       this.texture = texture;
