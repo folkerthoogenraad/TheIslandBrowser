@@ -215,19 +215,21 @@ export class PlayerGameObject extends GameObject{
    fixedUpdate(delta: number){
       super.fixedUpdate(delta);
 
-      this.findGround();
-
+      
       if(!this.grounded && this.body.collidedBottom && this.groundLeaveTime > 0.8){
          this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y + 8, this.effectLand);
       }
-
+      
       this.grounded = this.body.collidedBottom;
       this.wallLeft = this.body.collidedLeft;
       this.wallRight = this.body.collidedRight;
+      
+      this.findGround();
 
       if(this.wallLeft || this.wallRight){
          if(!this.hadWall && !this.grounded && this.body.velocity.y > 0){
-            this.yVelocity = 0;
+            // this.yVelocity = 0;
+            this.body.velocity.y = 0;
          }
          this.hadWall = true;
       }
@@ -282,19 +284,32 @@ export class PlayerGameObject extends GameObject{
    findGround(){
       this.groundMovement = null;
 
-      // Find all the objects below me :)
-      let groundList = this.scene.physics.boxcast(this.body.boundingBox.clone().shrink(1).translate(0, 2));
-
-      groundList.forEach(ground => {
-         // Yes, I'm very aware this _can_ potentially be more than one component. But I honestly don't care. 
-         // This should not happen often and then we just choose the last one in the list :)
-
-         let c = ground.gameObject.findComponent(component => component instanceof MovingGroundComponent) as MovingGroundComponent|undefined;
-
-         if(c !== undefined){
-            this.groundMovement = c;
+      let getGround = (list: Rigidbody[])=>{
+         list.forEach(ground => {
+            // Yes, I'm very aware this _can_ potentially be more than one component. But I honestly don't care. 
+            // This should not happen often and then we just choose the last one in the list :)
+   
+            let c = ground.gameObject.findComponent(component => component instanceof MovingGroundComponent) as MovingGroundComponent|undefined;
+   
+            if(c !== undefined){
+               this.groundMovement = c;
+            }
+         });
+      };
+      
+      if(this.grounded){
+         getGround(this.scene.physics.boxcast(this.body.boundingBox.clone().shrink(1).translate(0, 2)));
+      }
+      else{
+         if(this.wallLeft){
+            getGround(this.scene.physics.boxcast(this.body.boundingBox.clone().shrink(1).translate(-2, 0)));
          }
-      });
+         else if(this.wallRight){
+            getGround(this.scene.physics.boxcast(this.body.boundingBox.clone().shrink(1).translate(2, 0)));
+         }
+      }
+
+
    }
 
    updateMove(delta: number){
@@ -354,6 +369,7 @@ export class PlayerGameObject extends GameObject{
          this.dashSavedSpeed = this.body.velocity.x;
          this.dashTimer = this.dashTime;
          this.dashTimeout = 0.2;
+
          this.body.velocity.y = 0;
          this.body.velocity.x = this.facing * this.dashSpeed;
 

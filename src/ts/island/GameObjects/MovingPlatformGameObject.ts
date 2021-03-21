@@ -30,11 +30,18 @@ export class MovingPlatformGameObject extends ResetableGameObject{
    width: number;
    height: number;
 
-   constructor(pathName: string, aabb: AABB){
+   velocity: number;
+   startPosition: number;
+
+   constructor(pathName: string, velocity: number, offset: number, aabb: AABB){
       super();
 
       this.width = aabb.width;
       this.height = aabb.height;
+
+      this.velocity = velocity;
+      this.startPosition = offset;
+      this.pathPosition = offset;
 
       this.pathName = pathName;
 
@@ -55,21 +62,39 @@ export class MovingPlatformGameObject extends ResetableGameObject{
       let texture = game.resources.loadTexture(IslandResources.SheetObjects);
 
       let sns = new NineSideSprite(texture);
-      sns.setup(16, 96, 16, 16, 7, 7, 7, 7);
+      sns.setup(16, 96, 16, 16, 4, 4, 4, 4);
 
       this.nin = sns;
-
+      
       this.sprite = game.resources.loadSpriteSheet(IslandResources.SheetObjects).getSprite(16, 96, 16, 16);
-
+      
       let manager = this.scene.findObject(obj => obj instanceof PathManager) as PathManager;
-
+      
       this.path = manager.getPath(this.pathName);
 
+      this.clampPath();
+   }
 
+   clampPath(){
+      if(this.path){
+         let l = this.path.length();
+
+         let even = Math.floor(this.pathPosition / l) % 2 === 1;
+
+         this.pathPosition %= this.path.length();
+
+         if(even){
+            this.direction = -1;
+            this.pathPosition = l - this.pathPosition;
+         }
+         else{
+            this.direction = 1;
+         }
+      }
    }
 
    fixedUpdate(delta: number){
-      this.pathPosition += 30 * delta * this.direction;
+      this.pathPosition += this.velocity * delta * this.direction;
 
       if(this.path === undefined) return;
 
@@ -80,7 +105,7 @@ export class MovingPlatformGameObject extends ResetableGameObject{
          this.direction = -this.direction;
       }
 
-      let newPos = this.path.getPosition(this.pathPosition - 30 * delta * this.direction);
+      let newPos = this.path.getPosition(this.pathPosition - this.velocity * delta * this.direction);
       let nextPos = this.path.getPosition(this.pathPosition);
 
       this.transform.position.x = newPos.x;
@@ -98,7 +123,8 @@ export class MovingPlatformGameObject extends ResetableGameObject{
    reset(){
       super.reset();
 
-      this.pathPosition = 0;
+      this.pathPosition = this.startPosition;
+      this.clampPath();
    }
 
    draw(graphics: Graphics){

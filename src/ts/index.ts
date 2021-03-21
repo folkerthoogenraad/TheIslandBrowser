@@ -16,6 +16,7 @@ import { MovingPlatformGameObject } from "island/GameObjects/MovingPlatformGameO
 import { PathManager } from "island/GameObjects/PathManager";
 import { Path } from "math/Path";
 import { Vector2 } from "math/Vector2";
+import { JumpPlatformGameObject } from "island/GameObjects/JumpPlatformGameObject";
 
 // Fuck this but whatever
 function initModal(element: HTMLElement){
@@ -46,70 +47,83 @@ document.addEventListener("DOMContentLoaded", async ()=>{
    // return;
 
    let game = new Game(canvas);
-   
-   let scene = new Scene();
-
-   let pathManager = new PathManager();
-
-   scene.addGameObject(pathManager);
-
-   scene.tilemap = await TileMap.fromTiledMapDownload("assets/levels/level5.json", game.resources, (obj) => {
-      if(obj.type === "Collider" || obj.type === "PlatformCollider"){
-         scene.addGameObject(new ColliderGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
-      }
-      if(obj.type === "LevelManager"){
-         scene.addGameObject(new LevelManager());
-      }
-      if(obj.type === "PlayerSpawn"){
-         scene.addGameObject(new PlayerSpawnGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
-      }
-      if(obj.type === "FallingBlock"){
-         scene.addGameObject(new FallingBlockGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
-      }
-      if(obj.type === "MovingPlatform"){
-         let pathName = "";
-
-         if(obj.properties != null){
-            obj.properties.forEach(prop => {
-               if(prop.name === "path") pathName = prop.value as string;
-            });
-         }
-
-         scene.addGameObject(new MovingPlatformGameObject(pathName, AABB.Create(obj.x, obj.y, obj.width, obj.height)));
-      }
-      if(obj.type === "Checkpoint"){
-         scene.addGameObject(new PlayerCheckpointGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
-      }
-      if(obj.type === "Feather"){
-         scene.addGameObject(new FeatherGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
-      }
-      if(obj.type === "PlayerFinish"){
-         scene.addGameObject(new PlayerFinishGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
-      }
-      if(obj.type === "Chest"){
-         scene.addGameObject(new ChestGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
-      }
-      if(obj.type === "Spikes"){
-         let spikes = new SpikesGameObject(
-            AABB.Create(obj.x, obj.y, obj.width, obj.height), 
-            List.has(obj.properties, prop => { return prop.name === "shrink" && prop.value === true; })
-         );
-
-         scene.addGameObject(spikes);
-      }
-      if(obj.type === "Path"){
-         let path = new Path();
-
-         obj.polyline.forEach(line => {
-            path.add(new Vector2(line.x + obj.x, line.y + obj.y));
-         });
-
-         pathManager.paths[obj.name] = path;
-      }
-   });
-   scene.physics.layers = scene.tilemap.colliders;
-   
-   game.scene = scene;
-
    game.run();
+   
+   let setLevel = async (level: string) =>{
+      let scene = new Scene();
+   
+      let pathManager = new PathManager();
+   
+      scene.addGameObject(pathManager);
+   
+      scene.tilemap = await TileMap.fromTiledMapDownload(level, game.resources, (obj) => {
+         if(obj.type === "Collider" || obj.type === "PlatformCollider"){
+            scene.addGameObject(new ColliderGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         }
+         if(obj.type === "LevelManager"){
+            scene.addGameObject(new LevelManager());
+         }
+         if(obj.type === "PlayerSpawn"){
+            scene.addGameObject(new PlayerSpawnGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         }
+         if(obj.type === "FallingBlock"){
+            scene.addGameObject(new FallingBlockGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         }
+         if(obj.type === "MovingPlatform"){
+            let pathName = "";
+            let velocity = 30;
+            let offset = 0;
+   
+            if(obj.properties != null){
+               obj.properties.forEach(prop => {
+                  if(prop.name === "path") pathName = prop.value as string;
+                  if(prop.name === "velocity") velocity = prop.value as number;
+                  if(prop.name === "offset") offset = prop.value as number;
+               });
+            }
+   
+            scene.addGameObject(new MovingPlatformGameObject(pathName, velocity, offset, AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         }
+         if(obj.type === "Checkpoint"){
+            scene.addGameObject(new PlayerCheckpointGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         }
+         if(obj.type === "JumpPlatform"){
+            scene.addGameObject(new JumpPlatformGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         }
+         if(obj.type === "Feather"){
+            scene.addGameObject(new FeatherGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         }
+         if(obj.type === "PlayerFinish"){
+            scene.addGameObject(new PlayerFinishGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         }
+         if(obj.type === "Chest"){
+            scene.addGameObject(new ChestGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         }
+         if(obj.type === "Spikes"){
+            let spikes = new SpikesGameObject(
+               AABB.Create(obj.x, obj.y, obj.width, obj.height), 
+               List.has(obj.properties, prop => { return prop.name === "shrink" && prop.value === true; })
+            );
+   
+            scene.addGameObject(spikes);
+         }
+         if(obj.type === "Path"){
+            let path = new Path();
+   
+            obj.polyline.forEach(line => {
+               path.add(new Vector2(line.x + obj.x, line.y + obj.y));
+            });
+   
+            pathManager.paths[obj.name] = path;
+         }
+      });
+      scene.physics.layers = scene.tilemap.colliders;
+      
+      game.scene = scene;
+      game.scene.init(game);
+   }
+
+   setLevel("assets/levels/level4.json");
+
+   (window as any).setLevel = setLevel;
 });

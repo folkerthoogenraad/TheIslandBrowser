@@ -19,6 +19,9 @@ export class FallingBlockGameObject extends ResetableGameObject{
    timer: number = 0;
    removeTimer: number = 1;
 
+   respawn: boolean = false;
+   respawnTimer: number = 1;
+
    animationTimer: number = 0;
    offset: Vector2 = new Vector2();
 
@@ -88,12 +91,17 @@ export class FallingBlockGameObject extends ResetableGameObject{
       
       this.body.solid = true;
       this.body.useDynamicCollisions = true;
+
+      this.respawnTimer = 1;
    }
 
    fixedUpdate(delta: number){
       if(!this.falling || this.timer > 0) return;
 
       this.body.velocity.y += 0.25 * 60 * 60 * delta;
+
+      this.respawnTimer -= delta;
+      if(this.respawnTimer < 0 && this.respawn) this.reset();
    }
 
    draw(graphics: Graphics){
