@@ -13,6 +13,9 @@ import { Scene } from "scene/Scene";
 import { TileMap } from "tilemap/TileMap";
 import List from "util/List";
 import { MovingPlatformGameObject } from "island/GameObjects/MovingPlatformGameObject";
+import { PathManager } from "island/GameObjects/PathManager";
+import { Path } from "math/Path";
+import { Vector2 } from "math/Vector2";
 
 // Fuck this but whatever
 function initModal(element: HTMLElement){
@@ -46,6 +49,10 @@ document.addEventListener("DOMContentLoaded", async ()=>{
    
    let scene = new Scene();
 
+   let pathManager = new PathManager();
+
+   scene.addGameObject(pathManager);
+
    scene.tilemap = await TileMap.fromTiledMapDownload("assets/levels/level5.json", game.resources, (obj) => {
       if(obj.type === "Collider" || obj.type === "PlatformCollider"){
          scene.addGameObject(new ColliderGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
@@ -60,7 +67,15 @@ document.addEventListener("DOMContentLoaded", async ()=>{
          scene.addGameObject(new FallingBlockGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
       }
       if(obj.type === "MovingPlatform"){
-         scene.addGameObject(new MovingPlatformGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         let pathName = "";
+
+         if(obj.properties != null){
+            obj.properties.forEach(prop => {
+               if(prop.name === "path") pathName = prop.value as string;
+            });
+         }
+
+         scene.addGameObject(new MovingPlatformGameObject(pathName, AABB.Create(obj.x, obj.y, obj.width, obj.height)));
       }
       if(obj.type === "Checkpoint"){
          scene.addGameObject(new PlayerCheckpointGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
@@ -81,6 +96,15 @@ document.addEventListener("DOMContentLoaded", async ()=>{
          );
 
          scene.addGameObject(spikes);
+      }
+      if(obj.type === "Path"){
+         let path = new Path();
+
+         obj.polyline.forEach(line => {
+            path.add(new Vector2(line.x + obj.x, line.y + obj.y));
+         });
+
+         pathManager.paths[obj.name] = path;
       }
    });
    scene.physics.layers = scene.tilemap.colliders;

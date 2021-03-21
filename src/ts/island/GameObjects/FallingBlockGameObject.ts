@@ -8,8 +8,9 @@ import { Vector2 } from "math/Vector2";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
 import { GameObject } from "scene/GameObject";
+import { ResetableGameObject } from "./ResetableGameObject";
 
-export class FallingBlockGameObject extends GameObject{
+export class FallingBlockGameObject extends ResetableGameObject{
    transform: Transform;
    body: Rigidbody;
    sprite!: Sprite;
@@ -71,8 +72,22 @@ export class FallingBlockGameObject extends GameObject{
       this.removeTimer -= delta;
 
       if(this.removeTimer < 0) {
-         this.scene.removeGameObject(this);
+         // this.scene.removeGameObject(this);
       }
+   }
+
+   reset(){
+      super.reset();
+
+      this.offset.x = 0;
+      this.offset.y = 0;
+      
+      this.falling = false;
+      this.timer = 0;
+      this.removeTimer = 1;
+      
+      this.body.solid = true;
+      this.body.useDynamicCollisions = true;
    }
 
    fixedUpdate(delta: number){
@@ -82,6 +97,8 @@ export class FallingBlockGameObject extends GameObject{
    }
 
    draw(graphics: Graphics){
+      if(this.removeTimer < 0) return;
+      
       graphics.setAlpha(this.removeTimer);
       graphics.drawSprite(this.sprite, this.transform.interpolatedPosition.x + this.offset.x, this.transform.interpolatedPosition.y + this.offset.y);
       graphics.setAlpha(1);

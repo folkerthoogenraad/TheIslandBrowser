@@ -11,6 +11,7 @@ import { PlayerCheckpointGameObject } from "./PlayerCheckpointGameObject";
 import { PlayerFinishGameObject } from "./PlayerFinishGameObject";
 import { PlayerGameObject } from "./PlayerGameObject";
 import { PlayerSpawnGameObject } from "./PlayerSpawnGameObject";
+import { ResetableGameObject } from "./ResetableGameObject";
 
 export class LevelManager extends GameObject{
    spawn?: PlayerSpawnGameObject;
@@ -164,6 +165,12 @@ export class LevelManager extends GameObject{
       }
       
       this.scene.addGameObject(this.player);
+
+      this.scene.gameObjects.forEach(obj => {
+         if(obj instanceof ResetableGameObject){
+            obj.reset();
+         }
+      });
       
       this.sync();
    }

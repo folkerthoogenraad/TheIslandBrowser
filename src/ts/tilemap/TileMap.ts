@@ -245,8 +245,8 @@ export class TileMap {
       let tiles: { [key: number]: Animation } = {};
       
       map.tilesets.forEach(set => {
-         // let sheet = SpriteSheet.fromHTML(set.name);
          let sheet = resourceManager.loadSpriteSheet(RootFolder + set.image);
+         
          tilesets.push({
             set,
             sheet

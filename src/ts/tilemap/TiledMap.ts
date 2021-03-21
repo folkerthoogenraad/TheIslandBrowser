@@ -50,9 +50,16 @@ export interface TiledObject {
    name: string;
    type: string;
 
+   polyline: TiledPosition[];
+
    properties: TiledObjectProperties[];
 
    visible: boolean;
+}
+
+export interface TiledPosition{
+   x: number;
+   y: number;
 }
 
 export interface TiledObjectProperties{

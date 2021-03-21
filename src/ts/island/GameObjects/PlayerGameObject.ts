@@ -295,13 +295,6 @@ export class PlayerGameObject extends GameObject{
             this.groundMovement = c;
          }
       });
-
-      if(this.groundMovement === null){
-         console.log("no ground");
-      }
-      else{
-         console.log(this.groundMovement!.velocity.x + ", " + this.groundMovement!.velocity.y);
-      }
    }
 
    updateMove(delta: number){
