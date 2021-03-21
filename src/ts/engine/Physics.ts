@@ -144,7 +144,7 @@ export class Physics{
                self.collider,
                other.collider,
                other.transform.position.clone().sub(self.transform.position),
-               self.velocity); // TODO relative velocity
+               self.velocity.clone().add(other.velocity)); // TODO relative velocity
 
             if(unstuckDist !== undefined){
                self.transform.position.add(unstuckDist);
@@ -196,6 +196,23 @@ export class Physics{
          self.onCollision.emit(other);
          other.onCollision.emit(self);
       });
+   }
+
+   boxcast(aabb: AABB, solidOnly: boolean = true): Rigidbody[]{
+      let list: Rigidbody[] = [];
+
+      // TODO make a collider from this AABB and feed it into the collision system
+
+      this.bodies.forEach(body => {
+         if(solidOnly && !body.solid) return;
+
+         // TODO good collision but w/e this is ok for now
+         if(body.boundingBox.overlaps(aabb)){
+            list.push(body);
+         }
+      });
+
+      return list;
    }
 
    drawDebug(graphics: Graphics){

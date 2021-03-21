@@ -3,6 +3,7 @@ import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
 import { HealthComponent } from "island/Components/HealthComponent";
 import { InteractorComponent } from "island/Components/InteractorComponent";
+import { MovingGroundComponent } from "island/Components/MovingGroundComponent";
 import { PlayerInputComponent } from "island/Components/PlayerInputComponent";
 import IslandResources from "island/IslandResources";
 import { AABB } from "math/AABB";
@@ -58,6 +59,8 @@ export class PlayerGameObject extends GameObject{
    wallLeft: boolean = false;
    wallRight: boolean = false;
 
+   groundMovement: MovingGroundComponent|null = null;
+
    hadWall: boolean = false;
 
    dashing: boolean = false;
@@ -82,7 +85,36 @@ export class PlayerGameObject extends GameObject{
    canDoubleJump: boolean = false;
    get canJump() { return  this.grounded || (this.groundLeaveTime < this.cayoteTime); }
 
+   get xVelocity() {
+      let v = this.body.velocity.x;
 
+      if(this.groundMovement){
+         v -= this.groundMovement.velocity.x;
+      }
+
+      return v;
+   }
+   set xVelocity(v: number){
+      if(this.groundMovement){
+         v += this.groundMovement.velocity.x;
+      }
+      this.body.velocity.x = v;
+   }
+   get yVelocity() {
+      let v = this.body.velocity.y;
+
+      if(this.groundMovement){
+         v -= this.groundMovement.velocity.y;
+      }
+
+      return v;
+   }
+   set yVelocity(v: number){
+      if(this.groundMovement){
+         v += this.groundMovement.velocity.y;
+      }
+      this.body.velocity.y = v;
+   }
 
    constructor(){
       super();
@@ -128,7 +160,7 @@ export class PlayerGameObject extends GameObject{
       this.currentAnimation = this.idleAnimation;
    }
 
-   _fixedUpdate(delta: number){
+   debugMouseUpdate(delta: number){
       const mouse = this.game.input.mouse;
 
       this.transform.position.x = this.scene.camera.screenToWorldX(mouse.x);
@@ -182,6 +214,8 @@ export class PlayerGameObject extends GameObject{
 
    fixedUpdate(delta: number){
       super.fixedUpdate(delta);
+
+      this.findGround();
 
       if(!this.grounded && this.body.collidedBottom && this.groundLeaveTime > 0.8){
          this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y + 8, this.effectLand);
@@ -242,6 +276,24 @@ export class PlayerGameObject extends GameObject{
       this.updateAnimation(delta);
    }
 
+   findGround(){
+      this.groundMovement = null;
+
+      // Find all the objects below me :)
+      let groundList = this.scene.physics.boxcast(this.body.boundingBox.clone().shrink(1).translate(0, 2));
+
+      groundList.forEach(ground => {
+         // Yes, I'm very aware this _can_ potentially be more than one component. But I honestly don't care. 
+         // This should not happen often and then we just choose the last one in the list :)
+
+         let c = ground.gameObject.findComponent(component => component instanceof MovingGroundComponent) as MovingGroundComponent|undefined;
+
+         if(c !== undefined){
+            this.groundMovement = c;
+         }
+      });
+   }
+
    updateMove(delta: number){
       // Update facing
       if(this.input.direction > 0){
@@ -286,10 +338,6 @@ export class PlayerGameObject extends GameObject{
 
             this.accelerate(this.facing, this.dashSavedMaxSpeed, this.dashSavedAddition);
 
-            if(this.body.velocity.x * this.facing < this.dashSavedMaxSpeed){
-
-            }
-
             this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.effectDash, this.facing);
          }
       }
@@ -327,7 +375,7 @@ export class PlayerGameObject extends GameObject{
 
       if(this.canJump){
          if(this.jumpHop){
-            this.body.velocity.y = this.jumpSpeed;
+            this.yVelocity = this.jumpSpeed;
             this.jumping = true;
 
             if(!this.grounded){
@@ -343,7 +391,7 @@ export class PlayerGameObject extends GameObject{
       }
       else if(this.canDoubleJump){
          if(this.jumpHop){
-            this.body.velocity.y = this.jumpSpeed;
+            this.yVelocity = this.jumpSpeed;
             this.jumping = true;
             this.canDoubleJump = false;
             
@@ -353,8 +401,8 @@ export class PlayerGameObject extends GameObject{
       }
       else{
          if(this.wallLeft && this.jumpHop){
-            this.body.velocity.x = this.moveSpeed;
-            this.body.velocity.y = this.jumpSpeed;
+            this.xVelocity = this.moveSpeed;
+            this.yVelocity = this.jumpSpeed;
 
             this.wallJumpTimer = 0.05;
 
@@ -367,8 +415,8 @@ export class PlayerGameObject extends GameObject{
             this.scene.particleSystem.addParticle(this.transform.position.x - 5, this.transform.position.y, this.effectWalljump, 1);
          }
          if(this.wallRight && this.jumpHop){
-            this.body.velocity.x = -this.moveSpeed;
-            this.body.velocity.y = this.jumpSpeed;
+            this.xVelocity = -this.moveSpeed;
+            this.yVelocity = this.jumpSpeed;
 
             this.wallJumpTimer = 0.05;
 
@@ -383,28 +431,28 @@ export class PlayerGameObject extends GameObject{
       }
       
       // Jump canceling
-      if(this.body.velocity.y > 0){
+      if(this.yVelocity > 0){
          this.jumping = false;
       }
       if(this.jumping && !this.input.jumpDown){
-         this.body.velocity.y = this.body.velocity.y * 0.25;
+         this.yVelocity = this.yVelocity * 0.25;
          this.jumping = false;
       }
    }
 
    updateAnimation(delta: number){
       // Animation stuff
-      if(this.body.velocity.x !== 0){
+      if(this.xVelocity !== 0){
          this.currentAnimation = this.walkAnimation;
       }
       else{
          this.currentAnimation = this.idleAnimation;
       }
 
-      if(!this.grounded && this.body.velocity.y < 0){
+      if(!this.grounded && this.yVelocity < 0){
          this.currentAnimation = this.jumpAnimation;
       }
-      if(!this.grounded && this.body.velocity.y >= 0){
+      if(!this.grounded && this.yVelocity >= 0){
          this.currentAnimation = this.fallAnimation;
       }
       if((this.wallLeft || this.wallRight) && !this.grounded){
@@ -420,6 +468,7 @@ export class PlayerGameObject extends GameObject{
    updateGravity(delta: number){
       if(!this.useGravity) return;
 
+      // TODO figure out if we need this.velocityY, probably right?
       if(this.body.velocity.y < 0){
          this.body.velocity.y += this.gravity * this.gravityUpFraction * delta;
       }
@@ -434,7 +483,7 @@ export class PlayerGameObject extends GameObject{
 
    accelerate(dir: number, maxSpeed: number, acceleration: number){
       let acc = acceleration;
-      let vel = this.body.velocity.x * dir;
+      let vel = this.xVelocity * dir;
 
       if(vel >= maxSpeed) return;
 
@@ -442,18 +491,18 @@ export class PlayerGameObject extends GameObject{
          acc = maxSpeed - vel;
       }
 
-      this.body.velocity.x += acc * dir;
+      this.xVelocity += acc * dir;
       
    }
    stop(acceleration: number){
-      let dir = Math.sign(this.body.velocity.x);
-      let vel = Math.abs(this.body.velocity.x);
+      let dir = Math.sign(this.xVelocity);
+      let vel = Math.abs(this.xVelocity);
 
       let rem = acceleration;
 
       if(vel - rem < 0) rem = vel;
 
-      this.body.velocity.x -= rem * dir;
+      this.xVelocity -= rem * dir;
    }
 
    draw(graphics: Graphics){

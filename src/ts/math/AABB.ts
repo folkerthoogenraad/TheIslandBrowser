@@ -83,6 +83,24 @@ export class AABB{
       return this;
    }
 
+   shrink(amount: number){
+      this.left += amount;
+      this.right -= amount;
+      this.top += amount;
+      this.bottom -= amount;
+
+      return this;
+   }
+
+   translate(x: number, y: number){
+      this.left += x;
+      this.right += x;
+      this.top += y;
+      this.bottom += y;
+
+      return this;
+   }
+
    clone(){
       return new AABB(this.left, this.top, this.right, this.bottom);
    }

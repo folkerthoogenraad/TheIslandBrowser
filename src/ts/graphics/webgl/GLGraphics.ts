@@ -199,10 +199,13 @@ export class GLGraphics extends Graphics{
 
       // TODO if statements and stuff :)
       this.shader.use();
-      this.shader.setUniformMatrix(this.attributes.modelViewUniform!, this.modelViewMatrix);
-      this.shader.setUniformMatrix(this.attributes.projectionUniform!, this.projectionMatrix);
 
-      this.shader.setUniformTexture(this.attributes.textureUniform!, this.currentTexture);
+      this.shader.setUniformMatrix(this.attributes.modelViewUniform, this.modelViewMatrix);
+      this.shader.setUniformMatrix(this.attributes.projectionUniform, this.projectionMatrix);
+      
+      this.shader.setUniformPosition(this.attributes.screenSizeUniform, this.gl.canvas.width, this.gl.canvas.height);
+
+      this.shader.setUniformTexture(this.attributes.textureUniform, this.currentTexture);
 
       gl.drawArrays(gl.TRIANGLES, 0, this.batch.length);
    }
@@ -216,11 +219,9 @@ export class GLGraphics extends Graphics{
       let scaleX = 2 / camera.width;
       let scaleY = -2 / camera.height;
 
+      // Snapping to whole pixels
       let offsetX = -Math.floor(camera.center.x * floorX) / floorX  * scaleX;
       let offsetY = -Math.floor(camera.center.y * floorY) / floorY * scaleY;
-
-      this.batch.floorX = floorX;
-      this.batch.floorY = floorY;
 
       this.projectionMatrix = new Float32Array([
          scaleX, 0, 0, 0,
@@ -231,6 +232,11 @@ export class GLGraphics extends Graphics{
    }
 
    updateSize(){
-      this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+      let canvas = this.gl.canvas as HTMLCanvasElement;
+
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+
+      this.gl.viewport(0, 0, canvas.width, canvas.height);
    }
 }

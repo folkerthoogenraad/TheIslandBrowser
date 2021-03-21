@@ -30,9 +30,6 @@ export class GLVertexBatch{
    b: number = 1;
    a: number = 1;
 
-   floorX: number;
-   floorY: number;
-
    length: number = 0;
 
    get left() { return this.data.length / GLVertexBatch.StrideInBytes - this.index - 1; }
@@ -42,9 +39,6 @@ export class GLVertexBatch{
       
       this.data = new Float32Array(3 * 1024);
       this.index = 0;
-
-      this.floorX = 1;
-      this.floorY = 1;
 
       this.buffer = gl.createBuffer()!;
 
@@ -67,8 +61,8 @@ export class GLVertexBatch{
    vertex(x: number, y: number, z: number){
       let idx = this.index * GLVertexBatch.Stride + GLVertexBatch.PositionOffset;
 
-      this.data[idx + 0] = Math.floor(x * this.floorX) / this.floorX;
-      this.data[idx + 1] = Math.floor(y * this.floorY) / this.floorY;
+      this.data[idx + 0] = x;
+      this.data[idx + 1] = y;
       this.data[idx + 2] = z;
       
       this.data[idx + 3] = this.r;

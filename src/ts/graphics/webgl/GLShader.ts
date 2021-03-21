@@ -1,3 +1,4 @@
+import { Vector2 } from "math/Vector2";
 import { GLTexture } from "./GLTexture";
 
 export const DefaultVertexSource = `
@@ -8,13 +9,29 @@ attribute vec2 uv;
 uniform mat4 u_MatrixModelView;
 uniform mat4 u_MatrixProjection;
 
+uniform vec2 u_ScreenSize;
+
 varying highp vec4 v_Color;
 varying highp vec2 v_UV;
+
+highp vec4 pixelPerfect(highp vec4 v){
+   vec2 sp = vec2(v.x, v.y);
+
+   vec2 ss = u_ScreenSize / 2.0;
+
+   sp = floor(sp * ss) / ss;
+
+   v.x = sp.x;
+   v.y = sp.y;
+
+   return v;
+}
 
 void main() {
    v_Color = color;
    v_UV = uv;
-   gl_Position = u_MatrixProjection * u_MatrixModelView * vec4(position, 1.0);
+   
+   gl_Position = pixelPerfect(u_MatrixProjection * u_MatrixModelView * vec4(position, 1.0));
 }
 `;
 
@@ -44,18 +61,20 @@ export class GLShaderAttributeSet{
    colorAttribute : number = 0;
    uvAttribute : number = 0;
 
-   modelViewUniform : WebGLUniformLocation = 0;
-   projectionUniform : WebGLUniformLocation = 0;
-   textureUniform : WebGLUniformLocation = 0;
+   modelViewUniform: WebGLUniformLocation|null = null;
+   projectionUniform: WebGLUniformLocation|null = null;
+   textureUniform: WebGLUniformLocation|null = null;
+   screenSizeUniform: WebGLUniformLocation|null = null;
 
    load(program: GLShaderProgram){
       this.positionAttribute = program.getAttributeLocation("position");
       this.colorAttribute = program.getAttributeLocation("color");
       this.uvAttribute = program.getAttributeLocation("uv");
 
-      this.modelViewUniform = program.getUniformLocation("u_MatrixModelView")!;
-      this.projectionUniform = program.getUniformLocation("u_MatrixProjection")!;
-      this.textureUniform = program.getUniformLocation("u_Texture")!;
+      this.modelViewUniform = program.getUniformLocation("u_MatrixModelView");
+      this.projectionUniform = program.getUniformLocation("u_MatrixProjection");
+      this.textureUniform = program.getUniformLocation("u_Texture");
+      this.screenSizeUniform = program.getUniformLocation("u_ScreenSize");
    }
 }
 
@@ -131,10 +150,21 @@ export class GLShaderProgram {
       return this.gl.getUniformLocation(this.id, name);
    }
 
-   setUniformMatrix(uniform: WebGLUniformLocation, matrix: Float32Array){
+   setUniformVector2(uniform: WebGLUniformLocation|null, vector: Vector2){
+      if(uniform === null) return;
+      this.setUniformPosition(uniform, vector.x, vector.y);
+   }
+   setUniformPosition(uniform: WebGLUniformLocation|null, x: number, y: number){
+      if(uniform === null) return;
+      this.gl.uniform2f(uniform, x, y);
+   }
+
+   setUniformMatrix(uniform: WebGLUniformLocation|null, matrix: Float32Array){
+      if(uniform === null) return;
       this.gl.uniformMatrix4fv(uniform, false, matrix);
    }
-   setUniformTexture(uniform: WebGLUniformLocation, texture: GLTexture){
+   setUniformTexture(uniform: WebGLUniformLocation|null, texture: GLTexture){
+      if(uniform === null) return;
       this.gl.activeTexture(this.gl.TEXTURE0);
 
       texture.bind();
