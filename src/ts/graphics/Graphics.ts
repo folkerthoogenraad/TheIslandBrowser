@@ -25,6 +25,8 @@ export abstract class Graphics{
    public setColor(r: number, g: number, b: number, a: number = 1){
       this.setColorRaw(r, g, b, a);
    }
+   public abstract setAlpha(a: number): void;
+
    public abstract setColorRaw(r: number, g: number, b: number, a: number): void;
 
    public abstract updateSize(): void;

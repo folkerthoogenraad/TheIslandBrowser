@@ -88,5 +88,4 @@ document.addEventListener("DOMContentLoaded", async ()=>{
    game.scene = scene;
 
    game.run();
-   
 });

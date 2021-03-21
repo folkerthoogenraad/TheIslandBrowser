@@ -77,6 +77,11 @@ export class Canvas2DGraphics extends Graphics{
    setColorRaw(r: number, g: number, b: number, a: number){
       this.color = `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
    }
+   
+   setAlpha(a: number){
+      // Do nothing :) I hate canvas renderer.
+   }
+
    getColor(){
       return this.color;
    }

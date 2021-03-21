@@ -144,7 +144,7 @@ export class Physics{
                self.collider,
                other.collider,
                other.transform.position.clone().sub(self.transform.position),
-               self.velocity.clone().add(other.velocity)); // TODO relative velocity
+               self.velocity.clone().sub(other.velocity)); // TODO relative velocity
 
             if(unstuckDist !== undefined){
                self.transform.position.add(unstuckDist);

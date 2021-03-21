@@ -11,6 +11,7 @@ uniform mat4 u_MatrixProjection;
 
 uniform vec2 u_ScreenSize;
 
+varying highp vec4 v_Position;
 varying highp vec4 v_Color;
 varying highp vec2 v_UV;
 
@@ -28,29 +29,51 @@ highp vec4 pixelPerfect(highp vec4 v){
 }
 
 void main() {
+   v_Position = pixelPerfect(u_MatrixProjection * u_MatrixModelView * vec4(position, 1.0));
    v_Color = color;
    v_UV = uv;
    
-   gl_Position = pixelPerfect(u_MatrixProjection * u_MatrixModelView * vec4(position, 1.0));
+   gl_Position = v_Position;
 }
 `;
 
 export const DefaultFragmentSource = `
+varying highp vec4 v_Position;
 varying highp vec4 v_Color;
 varying highp vec2 v_UV;
 
 uniform sampler2D u_Texture;
 
+highp vec4 vga(highp vec4 color){
+   // Low color precision :)
+   const highp float depth = 2.0;
+   color.r = floor(color.r * depth) / depth;
+   color.g = floor(color.g * depth) / depth;
+   color.b = floor(color.b * depth) / depth;
+
+   return color;
+}
+highp vec4 gray(highp vec4 color){
+   // Low color precision :)
+   highp float value = (color.r * 0.4 + color.g * 0.3 + color.b * 0.3) / 2.0;
+
+   highp vec4 target = vec4(value, value, value, color.a);
+
+   highp float dist = length(vec2(v_Position) + vec2(0.0, 0.4)) * 2.0;
+
+   dist = floor(dist * 3.0) / 3.0;
+
+   return mix(color, target, clamp(dist, 0.0, 1.0));
+   // return vec4(dist, dist, dist, 1.0);
+}
+
 void main() {
    highp vec4 color = texture2D(u_Texture, v_UV) * v_Color;
-   // highp vec4 color = texture2D(u_Texture, v_UV) * vec4(1.0, 0.0, 0.0, 1.0);
 
-   // Low color precision :)
-   // color.r = floor(color.r * 8.0) / 8.0;
-   // color.g = floor(color.g * 8.0) / 8.0;
-   // color.b = floor(color.b * 8.0) / 8.0;
+   // Discard alpha
+   if(color.a < 0.01) discard;
 
-   gl_FragColor = color;
+   gl_FragColor = (color);
 }
 `;
 

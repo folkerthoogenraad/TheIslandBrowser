@@ -48,7 +48,7 @@ export function unstuckBoxTile(self: BoxCollider, other: TileCollider, relativeP
    if(other.left && relativeVelocity.x > 0){
       xOverlap = -(selfBounds.right - otherBounds.left);
       xCollided = true;
-   }else if(other.right && relativeVelocity.x <= 0){
+   }else if(other.right && relativeVelocity.x < 0){
       xOverlap = -(selfBounds.left - otherBounds.right);
       xCollided = true;
    }
@@ -56,7 +56,7 @@ export function unstuckBoxTile(self: BoxCollider, other: TileCollider, relativeP
    if(other.top && relativeVelocity.y > 0){
       yOverlap = -(selfBounds.bottom - otherBounds.top);
       yCollided = true;
-   }else if(other.bottom && relativeVelocity.y <= 0){
+   }else if(other.bottom && relativeVelocity.y < 0){
       yOverlap = -(selfBounds.top - otherBounds.bottom);
       yCollided = true;
    }

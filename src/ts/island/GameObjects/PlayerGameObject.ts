@@ -227,7 +227,7 @@ export class PlayerGameObject extends GameObject{
 
       if(this.wallLeft || this.wallRight){
          if(!this.hadWall && !this.grounded && this.body.velocity.y > 0){
-            this.body.velocity.y = 0;
+            this.yVelocity = 0;
          }
          this.hadWall = true;
       }
@@ -242,13 +242,16 @@ export class PlayerGameObject extends GameObject{
          this.groundLeaveTime += delta;
       }
 
-
       // Make sure we stick to the wall
       if(!this.grounded && this.wallRight){
          this.body.velocity.x = 60;
       }
       if(!this.grounded && this.wallLeft){
          this.body.velocity.x = -60;
+      }
+      // This is for moving platforms :)
+      if(this.grounded){
+         this.yVelocity = 0;
       }
 
       if(!this.input.jumpDown){
@@ -292,6 +295,13 @@ export class PlayerGameObject extends GameObject{
             this.groundMovement = c;
          }
       });
+
+      if(this.groundMovement === null){
+         console.log("no ground");
+      }
+      else{
+         console.log(this.groundMovement!.velocity.x + ", " + this.groundMovement!.velocity.y);
+      }
    }
 
    updateMove(delta: number){

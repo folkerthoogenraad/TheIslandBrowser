@@ -239,4 +239,8 @@ export class GLGraphics extends Graphics{
 
       this.gl.viewport(0, 0, canvas.width, canvas.height);
    }
+   
+   public setAlpha(a: number){
+      this.color.a = a;
+   }
 }

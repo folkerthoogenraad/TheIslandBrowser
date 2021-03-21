@@ -222,7 +222,7 @@ export class TileMap {
    draw(graphics: Graphics, bounds: AABB){
       graphics.setColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
       graphics.drawRectangle(0, 0, this.width * this.tileWidth, this.height * this.tileHeight, true);
-      
+
       graphics.setColor(1, 1, 1, 1);
       
       this.layers.forEach(layer => layer.draw(graphics, bounds));

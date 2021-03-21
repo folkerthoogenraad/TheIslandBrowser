@@ -16,6 +16,7 @@ export class FallingBlockGameObject extends GameObject{
 
    falling: boolean = false;
    timer: number = 0;
+   removeTimer: number = 1;
 
    animationTimer: number = 0;
    offset: Vector2 = new Vector2();
@@ -65,7 +66,13 @@ export class FallingBlockGameObject extends GameObject{
       this.offset.x = 0;
       this.offset.y = 0;
 
-      // this.body.solid = false;
+      this.body.solid = false;
+
+      this.removeTimer -= delta;
+
+      if(this.removeTimer < 0) {
+         this.scene.removeGameObject(this);
+      }
    }
 
    fixedUpdate(delta: number){
@@ -75,6 +82,8 @@ export class FallingBlockGameObject extends GameObject{
    }
 
    draw(graphics: Graphics){
+      graphics.setAlpha(this.removeTimer);
       graphics.drawSprite(this.sprite, this.transform.interpolatedPosition.x + this.offset.x, this.transform.interpolatedPosition.y + this.offset.y);
+      graphics.setAlpha(1);
    }
 }

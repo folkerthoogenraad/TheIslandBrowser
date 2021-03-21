@@ -45,7 +45,7 @@ export class MovingPlatformGameObject extends GameObject{
       if(this.timer < 0){
          this.timer = 2;
          this.direction = -this.direction;
-         this.body.velocity.x = this.direction * 30;
+         this.body.velocity.x = this.direction * 40;
       }
 
       this.ground.velocity.x = this.body.velocity.x;
