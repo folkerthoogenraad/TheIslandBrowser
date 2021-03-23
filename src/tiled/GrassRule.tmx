@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.2.3" orientation="orthogonal" renderorder="right-down" width="3" height="4" tilewidth="16" tileheight="16" infinite="0" nextlayerid="42" nextobjectid="1">
+<map version="1.4" tiledversion="1.4.3" orientation="orthogonal" renderorder="right-down" width="3" height="4" tilewidth="16" tileheight="16" infinite="0" nextlayerid="42" nextobjectid="1">
  <properties>
   <property name="AutoMappingRadius" type="int" value="2"/>
   <property name="DeleteTiles" type="bool" value="true"/>
   <property name="MatchOutsideMap" type="bool" value="true"/>
  </properties>
  <tileset firstgid="1" source="tilesets/TilesetForest.tsx"/>
- <tileset firstgid="129" source="tilesets/TilesetDocks.tsx"/>
+ <tileset firstgid="257" source="tilesets/TilesetDocks.tsx"/>
  <layer id="30" name="regions" width="3" height="4">
   <data encoding="csv">
 0,0,0,
@@ -86,22 +86,6 @@
   <data encoding="csv">
 0,0,0,
 0,120,0,
-0,0,0,
-0,0,0
-</data>
- </layer>
- <layer id="40" name="output8_Grass" width="3" height="4">
-  <data encoding="csv">
-0,0,0,
-0,87,0,
-0,0,0,
-0,0,0
-</data>
- </layer>
- <layer id="41" name="output9_Grass" width="3" height="4">
-  <data encoding="csv">
-0,0,0,
-0,88,0,
 0,0,0,
 0,0,0
 </data>

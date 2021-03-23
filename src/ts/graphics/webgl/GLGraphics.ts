@@ -75,6 +75,8 @@ export class GLGraphics extends Graphics{
    }
 
    drawSpriteRaw(sprite: Sprite, x: number, y: number, scaleX: number, scaleY: number, rotation: number){
+      if(sprite.texture === undefined) return;
+      
       this.setTexture(sprite.texture as GLTexture);
 
       this.ensureSize(6);
@@ -139,6 +141,7 @@ export class GLGraphics extends Graphics{
    }
 
    drawSpriteSimple(sprite: Sprite, x: number, y: number){
+      if(sprite.texture === undefined) return;
       this.setTexture(sprite.texture as GLTexture);
 
       this.ensureSize(6);

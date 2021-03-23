@@ -2,7 +2,7 @@ import { Animation } from "./Animation";
 import { Texture } from "./Texture";
 
 export class Sprite{
-   texture: Texture;
+   texture?: Texture;
 
    offsetX: number = 0;
    offsetY: number = 0;
@@ -17,11 +17,13 @@ export class Sprite{
    get sourceRight() { return this.sourceX + this.sourceWidth;}
    get sourceBottom() { return this.sourceY + this.sourceHeight;}
    
-   constructor(texture: Texture){
-      this.texture = texture;
+   constructor(texture?: Texture){
+      this.texture = texture!;
 
-      this.sourceWidth = texture.width as number;
-      this.sourceHeight = texture.height as number;
+      if(texture !== undefined){
+         this.sourceWidth = texture.width as number;
+         this.sourceHeight = texture.height as number;
+      }
    }
 
    get width() { return this.sourceWidth; }

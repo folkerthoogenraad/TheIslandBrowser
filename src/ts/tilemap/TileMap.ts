@@ -108,18 +108,46 @@ export class TilemapTileLayer extends TilemapLayer{
 export class TilemapImageLayer extends TilemapLayer {
    image: Sprite|undefined;
 
+   parallax: number = 10000000;
+
+   _tempSprite: Sprite;
+   _aabb: AABB;
+
    constructor(tilemap: TileMap, image?: Sprite){
       super(tilemap);
       this.image = image;
+      this._tempSprite = new Sprite(undefined);
+      this._aabb = new AABB();
    }
 
    
    draw(graphics: Graphics){
       if(this.image === undefined) return;
 
-      let bounds = this.tilemap.scene.camera.getBounds();
+      let pos = this.tilemap.scene.camera.center;
+      let bounds = this.tilemap.scene.camera.getBounds(this._aabb);
 
-      graphics.drawSpriteSimple(this.image, bounds.centerX - this.image.width / 2, bounds.centerY - this.image.height / 2)
+      let relativeX = pos.x - this.image.width / 2;
+      let relativeY = pos.y - this.image.height / 2;
+
+      let offsetX = -relativeX / this.parallax;
+      let offsetY = -relativeY / this.parallax;
+
+      while(offsetX < 0) {
+         offsetX += this.image.width;
+      }
+      while(offsetX > this.image.width){
+         offsetX -= this.image.width;
+      }
+
+      // let tileX = Math.round(offsetX / this.image.width);
+      // let tileY = Math.round(offsetY / this.image.height);
+
+      // offsetX -= tileX * this.image.width;
+      // offsetY -= tileY * this.image.height;
+
+      graphics.drawSpriteSimple(this.image, relativeX + offsetX - this.image.width, relativeY + offsetY);
+      graphics.drawSpriteSimple(this.image, relativeX + offsetX, relativeY + offsetY);
    }
 }
 
@@ -366,6 +394,14 @@ export class TileMap {
             let tileLayer = layer as TiledImageLayer;
 
             let imageLayer = new TilemapImageLayer(tilemap);
+            
+            // Load properties
+            if(layer.properties !== undefined){
+               layer.properties.forEach(prop => {
+                  if(prop.name === "parallax") imageLayer.parallax = prop.value as number;
+                  if(prop.name === "depth") imageLayer.depth = prop.value as number;
+               });
+            }
             
             imageLayer.image = resourceManager.loadSpriteSheet(RootFolder + tileLayer.image).getSprite(0, 0, 640, 360);
             
