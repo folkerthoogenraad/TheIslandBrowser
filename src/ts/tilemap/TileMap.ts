@@ -314,6 +314,8 @@ export class TileMap {
 
             let animation =  new Animation();
 
+            if(tile.animation === undefined) return;
+
             tile.animation.forEach(frame => {
                animation.addFrame(getSpriteFromTileset(set, frame.tileid, sheet));
             });

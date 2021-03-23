@@ -17,6 +17,7 @@ import { PathManager } from "island/GameObjects/PathManager";
 import { Path } from "math/Path";
 import { Vector2 } from "math/Vector2";
 import { JumpPlatformGameObject } from "island/GameObjects/JumpPlatformGameObject";
+import { LongDashGameObject } from "island/GameObjects/LongDashGameObject";
 
 // Fuck this but whatever
 function initModal(element: HTMLElement){
@@ -93,6 +94,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
          if(obj.type === "Feather"){
             scene.addGameObject(new FeatherGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
          }
+         if(obj.type === "LongDash"){
+            scene.addGameObject(new LongDashGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
+         }
          if(obj.type === "PlayerFinish"){
             scene.addGameObject(new PlayerFinishGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
          }
@@ -133,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       game.scene.init(game);
    }
 
-   setLevel("assets/levels/level4.json");
+   setLevel("assets/levels/level7.json");
 
    (window as any).setLevel = setLevel;
 });

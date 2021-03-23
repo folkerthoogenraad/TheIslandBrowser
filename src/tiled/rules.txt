@@ -1,3 +1,4 @@
 ForestRule.tmx
 GrassRule.tmx
 DocksRule.tmx
+CavesRule.tmx

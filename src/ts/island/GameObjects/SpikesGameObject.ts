@@ -21,7 +21,7 @@ export class SpikesGameObject extends DrawableGameObject{
       super();
 
       if(shrink){
-         let skin = aabb.height - 3;
+         let skin = aabb.height - 6;
 
          if(skin > 0){
             aabb.top += skin;
@@ -55,6 +55,8 @@ export class SpikesGameObject extends DrawableGameObject{
    }
 
    onCollision(other: Rigidbody){
+      if(other.velocity.y <= 0) return;
+      
       let comp = other.gameObject.findComponent(component => component instanceof HealthComponent) as HealthComponent|undefined;
 
       if(comp === undefined) return;

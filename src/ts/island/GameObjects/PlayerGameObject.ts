@@ -29,6 +29,7 @@ export class PlayerGameObject extends DrawableGameObject{
    effectDoubleJump!: Animation;
    
    effectDash!: Animation;
+   effectLongDash!: Animation;
 
    transform: Transform;
    body: Rigidbody;
@@ -66,6 +67,7 @@ export class PlayerGameObject extends DrawableGameObject{
    hadWall: boolean = false;
 
    dashing: boolean = false;
+   dashLong: boolean = false;
    dashSpeed: number = 4.7 * 60;
    dashTime: number = 24 / (this.dashSpeed);
 
@@ -85,7 +87,7 @@ export class PlayerGameObject extends DrawableGameObject{
    
    canDash: boolean = false;
    canDoubleJump: boolean = false;
-   get canJump() { return  this.grounded || (this.groundLeaveTime < this.cayoteTime); }
+   get canJump() { return this.grounded || (this.groundLeaveTime < this.cayoteTime); }
 
    get xVelocity() {
       let v = this.body.velocity.x;
@@ -156,6 +158,8 @@ export class PlayerGameObject extends DrawableGameObject{
 
       this.effectDash = sheetEffects.getAnimation(112, 0, 16, 16, 1).setOffset(8, 8);
       this.effectDash.frameRate = 4;
+      this.effectLongDash = sheetEffects.getAnimation(112, 16, 16, 16, 1).setOffset(8, 8);
+      this.effectLongDash.frameRate = 4;
 
       this.effectDoubleJump = sheetEffects.getAnimation(0, 48, 16, 16, 4).setOffset(8, 8);
 
@@ -262,14 +266,16 @@ export class PlayerGameObject extends DrawableGameObject{
          this.jumpHop = false;
       }
       
+
       // Jumping
       this.updateJump(delta);
 
       // Movement
       this.updateMove(delta);
-
+      
       // Dashing
       this.updateDash(delta);
+
       
 
       // Gravity
@@ -352,15 +358,25 @@ export class PlayerGameObject extends DrawableGameObject{
       if(this.dashing){
          this.dashTimer -= delta;
          
-         
-         if(this.dashTimer < 0){
-            this.dashing = false;
+         if(this.dashTimer < 0 && (!this.dashLong || this.grounded || this.wallLeft || this.wallRight)){
+            this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.dashLong ? this.effectLongDash : this.effectDash, this.facing);
             
-            this.body.velocity.x = this.dashSavedSpeed;
+            if(this.dashLong){
+               // this.jumping = false;
+               // if(this.wallLeft){
+               //    this.xVelocity = this.moveSpeed / 2;
+               //    this.yVelocity = this.jumpSpeed / 2;
+               // }
+               // if(this.wallRight){
+               //    this.xVelocity = -this.moveSpeed / 2;
+               //    this.yVelocity = this.jumpSpeed / 2;
+               // }
+            }
+
+            this.dashing = false;
+            this.dashLong = false;
 
             this.accelerate(this.facing, this.dashSavedMaxSpeed, this.dashSavedAddition);
-
-            this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.effectDash, this.facing);
          }
       }
       else{
@@ -385,7 +401,7 @@ export class PlayerGameObject extends DrawableGameObject{
 
       if(this.dashing && this.dashAnimationTimer <= 0){
          this.effectDash.frameRate = 1 / (this.dashTimer / 3 + 0.3);
-         this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.effectDash, this.facing);
+         this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.dashLong ? this.effectLongDash : this.effectDash, this.facing);
          this.dashAnimationTimer += 0.03;
       }
 
@@ -396,7 +412,7 @@ export class PlayerGameObject extends DrawableGameObject{
 
       if(this.grounded) this.canDoubleJump = false;
 
-      if(this.canJump){
+      if(this.canJump && !this.dashing){
          if(this.jumpHop){
             this.yVelocity = this.jumpSpeed;
             this.jumping = true;
@@ -407,6 +423,15 @@ export class PlayerGameObject extends DrawableGameObject{
 
             // This is really hacky but whatever
             this.groundLeaveTime = this.cayoteTime;
+            
+            this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y + 8, this.effectJump);
+         }
+         this.jumpHop = false;
+      }
+      else if(this.canJump && this.dashing && this.dashLong){
+         if(this.jumpHop){
+            this.yVelocity = this.jumpSpeed;
+            this.jumping = true;
             
             this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y + 8, this.effectJump);
          }
