@@ -1,5 +1,3 @@
-import { Canvas2DGraphics } from "graphics/canvas/Canvas2DGraphics";
-import { Canvas2DResourceManager } from "graphics/canvas/Canvas2DResourceManager";
 import { Graphics } from "graphics/Graphics";
 import { ResourceManager } from "graphics/ResourceManager";
 import { GLGraphics } from "graphics/webgl/GLGraphics";
