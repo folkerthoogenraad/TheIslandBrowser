@@ -3,17 +3,22 @@ import { Physics } from "engine/Physics";
 import { Camera } from "graphics/Camera";
 import { Graphics } from "graphics/Graphics";
 import { ParticleSystem } from "graphics/ParticleSystem";
+import { Surface } from "graphics/Surface";
 import { TileMap } from "tilemap/TileMap";
 import { GameObject } from "./GameObject";
 
 export class Scene{
    camera: Camera;
+   uiCamera: Camera;
+
    gameObjects: GameObject[];
    game!: Game;
    tilemap?: TileMap;
 
    physics: Physics;
    particleSystem: ParticleSystem;
+
+   surface!: Surface;
 
    // This gets used for transitions :)
    paused: boolean = false;
@@ -22,6 +27,8 @@ export class Scene{
 
    constructor(){
       this.camera = new Camera();
+      this.uiCamera = new Camera();
+
       this.gameObjects = [];
       this.physics = new Physics();
 
@@ -34,6 +41,8 @@ export class Scene{
 
       this.game = game;
       this.gameObjects.forEach(obj => obj.init(game));
+
+      this.surface = game.resources.createSurface(640, 360);
    }
 
    destroy(){
@@ -58,17 +67,23 @@ export class Scene{
    }
 
    draw(graphics: Graphics){
+      // graphics.setSurface(this.surface);
       graphics.setCamera(this.camera);
 
       this.tilemap?.draw(graphics, this.camera.getBounds());
       this.particleSystem.draw(graphics);
       this.gameObjects.forEach(obj => obj.draw(graphics));
       this.physics.drawDebug(graphics);
+      
+      // graphics.resetSurface();
+      // graphics.setCamera(this.uiCamera);
+
+      // // Scaled to fit
+      // graphics.drawSurface(this.surface, 0, 0, this.uiCamera.width / this.surface.width,  this.uiCamera.height / this.surface.height);
    }
 
    updateSize(){
-      let asp = this.game.canvas.width / this.game.canvas.height;
-      this.camera.width = this.camera.height * asp;
+      this.surface.resize(this.game.canvas.width, this.game.canvas.height);
    }
 
    addGameObject(obj: GameObject){

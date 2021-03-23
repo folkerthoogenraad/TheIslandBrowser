@@ -2,7 +2,12 @@ import { Graphics } from "graphics/Graphics";
 import { AABB } from "math/AABB";
 import { Camera } from "graphics/Camera";
 import { Sprite } from "graphics/Sprite";
+import { Surface } from "graphics/Surface";
+import { Texture } from "graphics/Texture";
 
+/**
+ * @deprecated The method should not be used
+ */
 export class Canvas2DGraphics extends Graphics{
    canvas: HTMLCanvasElement;
    context: CanvasRenderingContext2D;
@@ -61,6 +66,10 @@ export class Canvas2DGraphics extends Graphics{
    drawAABB(aabb: AABB, fill: boolean){
       this.drawRectangle(aabb.left, aabb.top, aabb.width, aabb.height, fill);
    }
+   drawTexture(texture: Texture, x: number, y: number, scaleX: number, scaleY: number){
+      
+   }
+
 
    setCamera(camera: Camera){
       this.context.resetTransform();
@@ -79,6 +88,11 @@ export class Canvas2DGraphics extends Graphics{
    }
    
    setAlpha(a: number){
+      // Do nothing :) I hate canvas renderer.
+   }
+   resetSurface(){
+   }
+   setSurface(surface: Surface){
       // Do nothing :) I hate canvas renderer.
    }
 

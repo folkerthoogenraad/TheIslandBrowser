@@ -8,6 +8,8 @@ export class Camera{
    width: number = 640;
    height: number = 360;
 
+   preserveAspectRatio: boolean = false;
+
    getBounds(aabb?: AABB){
       if(aabb === undefined){
          aabb = new AABB();

@@ -1,8 +1,11 @@
 import { Camera } from "graphics/Camera";
 import { Graphics } from "graphics/Graphics";
 import { Sprite } from "graphics/Sprite";
+import { Surface } from "graphics/Surface";
+import { Texture } from "graphics/Texture";
 import { Color } from "util/Color";
 import { DefaultFragmentSource, DefaultVertexSource, GLShaderProgram, GLShaderAttributeSet } from "./GLShader";
+import { GLSurface } from "./GLSurface";
 import { GLTexture } from "./GLTexture";
 import { GLVertexBatch } from "./GLVertexBatch";
 
@@ -12,6 +15,8 @@ export class GLGraphics extends Graphics{
    pixelTexture: GLTexture;
    currentTexture: GLTexture;
 
+   currentSurface?: GLSurface;
+
    batch: GLVertexBatch;
 
    projectionMatrix: Float32Array;
@@ -19,6 +24,8 @@ export class GLGraphics extends Graphics{
 
    drawing: boolean = false;
    color: Color;
+
+   camera?: Camera;
 
    shader: GLShaderProgram;
    attributes: GLShaderAttributeSet;
@@ -98,6 +105,37 @@ export class GLGraphics extends Graphics{
       this.batch.vertex(x + w, y + h, 0);
       this.batch.uv(u0, v1);
       this.batch.vertex(x, y + h, 0);
+   }
+
+   drawTexture(texture: Texture, x: number, y: number, scaleX: number, scaleY: number){
+      this.setTexture(texture as GLTexture);
+
+      this.ensureSize(6);
+      
+      this.batch.color(this.color.r, this.color.g, this.color.b, this.color.a);
+      
+      let w = texture.width * scaleX;
+      let h = texture.height * scaleY;
+
+      let u0 = 0;
+      let u1 = 1;
+      let v0 = 0;
+      let v1 = 1;
+
+      this.batch.uv(u0, v0);
+      this.batch.vertex(x, y, 0);
+      this.batch.uv(u1, v0);
+      this.batch.vertex(x + w, y, 0);
+      this.batch.uv(u1, v1);
+      this.batch.vertex(x + w, y + h, 0);
+      
+      this.batch.uv(u0, v0);
+      this.batch.vertex(x, y, 0);
+      this.batch.uv(u1, v1);
+      this.batch.vertex(x + w, y + h, 0);
+      this.batch.uv(u0, v1);
+      this.batch.vertex(x, y + h, 0);
+
    }
 
    drawSpriteSimple(sprite: Sprite, x: number, y: number){
@@ -188,6 +226,8 @@ export class GLGraphics extends Graphics{
       
       let gl = this.gl;
 
+      this.setCameraMatrix(this.currentSurface === undefined);
+
       gl.vertexAttribPointer(this.attributes.positionAttribute, 3, gl.FLOAT, false, GLVertexBatch.StrideInBytes, GLVertexBatch.PositionOffsetInBytes);
       gl.vertexAttribPointer(this.attributes.colorAttribute, 4, gl.FLOAT, false, GLVertexBatch.StrideInBytes, GLVertexBatch.ColorOffsetInBytes);
       gl.vertexAttribPointer(this.attributes.uvAttribute, 2, gl.FLOAT, false, GLVertexBatch.StrideInBytes, GLVertexBatch.UVOffsetInBytes);
@@ -203,7 +243,7 @@ export class GLGraphics extends Graphics{
       this.shader.setUniformMatrix(this.attributes.modelViewUniform, this.modelViewMatrix);
       this.shader.setUniformMatrix(this.attributes.projectionUniform, this.projectionMatrix);
       
-      this.shader.setUniformPosition(this.attributes.screenSizeUniform, this.gl.canvas.width, this.gl.canvas.height);
+      this.shader.setUniformPosition(this.attributes.screenSizeUniform, this.viewWidth, this.viewHeight);
 
       this.shader.setUniformTexture(this.attributes.textureUniform, this.currentTexture);
 
@@ -211,17 +251,36 @@ export class GLGraphics extends Graphics{
    }
 
    setCamera(camera: Camera){
-      this.flush();
+      if(this.camera !== camera){
+         this.flush();
+      }
 
-      let floorX = this.gl.canvas.width / camera.width;
-      let floorY = this.gl.canvas.height / camera.height;
+      this.camera = camera;
+   }
 
-      let scaleX = 2 / camera.width;
-      let scaleY = -2 / camera.height;
+   setCameraMatrix(flip: boolean = false){
+      if(this.camera === undefined) return;
+
+      let cameraWidth = this.camera.width;
+      let cameraHeight = this.camera.height;
+
+      if(!this.camera.preserveAspectRatio){
+         let asp = this.viewWidth / this.viewHeight;
+
+         cameraWidth = cameraHeight * asp;
+      }
+
+      let floorX = this.viewWidth / cameraWidth;
+      let floorY = this.viewHeight / cameraHeight;
+
+      let scaleX = 2 / cameraWidth;
+      let scaleY = 2 / cameraHeight;
+
+      if(flip) scaleY = -scaleY;
 
       // Snapping to whole pixels
-      let offsetX = -Math.floor(camera.center.x * floorX) / floorX  * scaleX;
-      let offsetY = -Math.floor(camera.center.y * floorY) / floorY * scaleY;
+      let offsetX = -Math.floor(this.camera.center.x * floorX) / floorX  * scaleX;
+      let offsetY = -Math.floor(this.camera.center.y * floorY) / floorY * scaleY;
 
       this.projectionMatrix = new Float32Array([
          scaleX, 0, 0, 0,
@@ -230,6 +289,25 @@ export class GLGraphics extends Graphics{
          offsetX, offsetY, 0, 1
       ]);
    }
+   
+   resetSurface(){
+      if(this.currentSurface !== undefined) this.flush();
+      this.currentSurface = undefined;
+
+      this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+
+      this.updateViewport();
+   }
+   setSurface(surface: Surface){
+      if(this.currentSurface !== surface) this.flush();
+      this.currentSurface = surface as GLSurface;
+      
+      this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+      this.currentSurface.bind();
+
+      this.updateViewport();
+   }
 
    updateSize(){
       let canvas = this.gl.canvas as HTMLCanvasElement;
@@ -237,7 +315,20 @@ export class GLGraphics extends Graphics{
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
 
-      this.gl.viewport(0, 0, canvas.width, canvas.height);
+      this.updateViewport();
+   }
+
+   get viewWidth(){
+      if(this.currentSurface !== undefined) return this.currentSurface.width;
+      return this.gl.canvas.width;
+   }
+   get viewHeight(){
+      if(this.currentSurface !== undefined) return this.currentSurface.height;
+      return this.gl.canvas.height;
+   }
+   
+   updateViewport(){
+      this.gl.viewport(0, 0, this.viewWidth, this.viewHeight);
    }
    
    public setAlpha(a: number){

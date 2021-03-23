@@ -26,6 +26,16 @@ export class GLTexture implements Texture{
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
    }
 
+   setEmpty(width: number, height: number){
+      this.width = width;
+      this.height = height;
+      
+      this.bind();
+      this.gl.texImage2D(this.gl.TEXTURE_2D,
+         0, this.gl.RGBA, width, height, 0, 
+         this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+   }
+
    setData(width: number, height: number, data: Uint8Array){
       this.width = width;
       this.height = height;

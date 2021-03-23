@@ -1,4 +1,5 @@
 import { SpriteSheet } from "./Sprite";
+import { Surface } from "./Surface";
 import { Texture } from "./Texture";
 
 export abstract class ResourceManager{
@@ -25,4 +26,6 @@ export abstract class ResourceManager{
    }
    
    abstract loadTextureRaw(src: string): Texture;
+   
+   abstract createSurface(width: number, height: number): Surface;
 }

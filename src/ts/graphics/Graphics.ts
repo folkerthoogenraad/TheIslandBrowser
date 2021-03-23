@@ -2,6 +2,8 @@ import { AABB } from "math/AABB";
 import { Camera } from "./Camera";
 import { NineSideSprite } from "./NineSideSprite";
 import { Sprite } from "./Sprite";
+import { Surface } from "./Surface";
+import { Texture } from "./Texture";
 
 export abstract class Graphics{
 
@@ -15,6 +17,11 @@ export abstract class Graphics{
    public abstract drawSpriteSimple(sprite: Sprite, x: number, y: number): void;
    
    public abstract drawSpriteRaw(sprite: Sprite, x: number, y: number, scaleX: number, scaleY: number, rotation: number): void;
+   public abstract drawTexture(texture: Texture, x: number, y: number, scaleX: number, scaleY: number): void;
+
+   public drawSurface(surface: Surface, x: number, y: number, scaleX: number, scaleY: number){
+      this.drawTexture(surface.texture, x, y, scaleX, scaleY);
+   }
 
    public drawSpriteTiled(sprite: Sprite, x: number, y: number, w: number, h: number, scaleX: number = 1, scaleY: number = 1){
       let spriteWidth = sprite.width * scaleX;
@@ -84,6 +91,8 @@ export abstract class Graphics{
       this.drawSpriteTiled(buffer, x + xMiddle, y + yMiddle, xSize, ySize);
    }
 
+   public abstract resetSurface(): void;
+   public abstract setSurface(surface: Surface): void;
    public abstract setCamera(camera: Camera): void;
    public setColor(r: number, g: number, b: number, a: number = 1){
       this.setColorRaw(r, g, b, a);
