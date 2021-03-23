@@ -125,7 +125,7 @@ export class TilemapImageLayer extends TilemapLayer {
       if(this.image === undefined) return;
 
       let pos = this.tilemap.scene.camera.center;
-      let bounds = this.tilemap.scene.camera.getBounds(this._aabb);
+      // let bounds = this.tilemap.scene.camera.getBounds(this._aabb);
 
       let relativeX = pos.x - this.image.width / 2;
       let relativeY = pos.y - this.image.height / 2;
@@ -139,12 +139,6 @@ export class TilemapImageLayer extends TilemapLayer {
       while(offsetX > this.image.width){
          offsetX -= this.image.width;
       }
-
-      // let tileX = Math.round(offsetX / this.image.width);
-      // let tileY = Math.round(offsetY / this.image.height);
-
-      // offsetX -= tileX * this.image.width;
-      // offsetY -= tileY * this.image.height;
 
       graphics.drawSpriteSimple(this.image, relativeX + offsetX - this.image.width, relativeY + offsetY);
       graphics.drawSpriteSimple(this.image, relativeX + offsetX, relativeY + offsetY);

@@ -315,7 +315,9 @@ export class GLGraphics extends Graphics{
    updateSize(){
       let canvas = this.gl.canvas as HTMLCanvasElement;
 
-      canvas.width = canvas.offsetWidth;
+      // canvas.width = canvas.offsetWidth;
+      // canvas.height = canvas.offsetHeight;
+      canvas.width = canvas.offsetHeight * 16 / 9;
       canvas.height = canvas.offsetHeight;
 
       this.updateViewport();

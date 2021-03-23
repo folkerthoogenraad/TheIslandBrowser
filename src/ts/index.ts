@@ -100,10 +100,20 @@ document.addEventListener("DOMContentLoaded", async ()=>{
             scene.addGameObject(new ChestGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
          }
          if(obj.type === "Spikes"){
+            let shrink = false;
+            let visible = false;
+   
+            if(obj.properties != null){
+               obj.properties.forEach(prop => {
+                  if(prop.name === "shrink") shrink = prop.value as boolean;
+                  if(prop.name === "visible") visible = prop.value as boolean;
+               });
+            }
+
             let spikes = new SpikesGameObject(
-               AABB.Create(obj.x, obj.y, obj.width, obj.height), 
-               List.has(obj.properties, prop => { return prop.name === "shrink" && prop.value === true; })
-            );
+               AABB.Create(obj.x, obj.y, obj.width, obj.height), shrink);
+               
+            spikes.visible = visible;
    
             scene.addGameObject(spikes);
          }
