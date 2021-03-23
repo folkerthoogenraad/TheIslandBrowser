@@ -10,6 +10,7 @@ export class Camera{
 
    preserveAspectRatio: boolean = false;
 
+   // We can fix this to not allocate memory at all :)
    getBounds(aabb?: AABB){
       if(aabb === undefined){
          aabb = new AABB();

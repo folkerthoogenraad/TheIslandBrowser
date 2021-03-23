@@ -55,8 +55,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       let pathManager = new PathManager();
    
       scene.addGameObject(pathManager);
-   
-      scene.tilemap = await TileMap.fromTiledMapDownload(level, game.resources, (obj) => {
+
+      let tilemap = await TileMap.fromTiledMapDownload(level, game.resources, (obj) => {
          if(obj.type === "Collider" || obj.type === "PlatformCollider"){
             scene.addGameObject(new ColliderGameObject(AABB.Create(obj.x, obj.y, obj.width, obj.height)));
          }
@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
             pathManager.paths[obj.name] = path;
          }
       });
-      scene.physics.layers = scene.tilemap.colliders;
+      scene.setTilemap(tilemap);
       
       game.scene = scene;
       game.scene.init(game);

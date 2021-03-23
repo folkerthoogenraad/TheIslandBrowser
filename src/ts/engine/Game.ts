@@ -6,7 +6,6 @@ import { Scene } from "scene/Scene";
 import { now } from "util/Time";
 import { DebugSettings } from "./DebugSettings";
 import { Input } from "./Input";
-import { Physics } from "./Physics";
 
 export class Game{   
    currentTime: number = 0;

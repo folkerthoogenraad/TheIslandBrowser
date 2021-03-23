@@ -3,8 +3,10 @@ import { Physics } from "engine/Physics";
 import { Camera } from "graphics/Camera";
 import { Graphics } from "graphics/Graphics";
 import { ParticleSystem } from "graphics/ParticleSystem";
+import { Renderer } from "graphics/Renderer";
 import { Surface } from "graphics/Surface";
-import { TileMap } from "tilemap/TileMap";
+import { GLShaderAttributeSet } from "graphics/webgl/GLShader";
+import { TileMap, TilemapCollisionLayer } from "tilemap/TileMap";
 import { GameObject } from "./GameObject";
 
 export class Scene{
@@ -15,6 +17,7 @@ export class Scene{
    game!: Game;
    tilemap?: TileMap;
 
+   renderer: Renderer;
    physics: Physics;
    particleSystem: ParticleSystem;
 
@@ -32,7 +35,10 @@ export class Scene{
       this.gameObjects = [];
       this.physics = new Physics();
 
+      this.renderer = new Renderer();
+
       this.particleSystem = new ParticleSystem();
+      this.particleSystem.scene = this;
    }
 
    init(game: Game){
@@ -40,6 +46,9 @@ export class Scene{
       this.initialized = true;
 
       this.game = game;
+
+      this.tilemap?.init(game);
+      this.particleSystem.init(game);
       this.gameObjects.forEach(obj => obj.init(game));
 
       this.surface = game.resources.createSurface(640, 360);
@@ -50,10 +59,12 @@ export class Scene{
       this.initialized = false;
 
       this.gameObjects.forEach(obj => obj.destroy());
+      this.particleSystem.destroy();
+      this.tilemap?.destroy();
    }
 
    update(delta: number){
-      if(!this.paused) this.tilemap?.update(delta, this.camera.getBounds());
+      if(!this.paused) this.tilemap?.update(delta);
       
       this.gameObjects.forEach(obj => { if(!this.paused || obj.alwaysUpdate) obj.update(delta); });
 
@@ -70,9 +81,13 @@ export class Scene{
       // graphics.setSurface(this.surface);
       graphics.setCamera(this.camera);
 
-      this.tilemap?.draw(graphics, this.camera.getBounds());
-      this.particleSystem.draw(graphics);
-      this.gameObjects.forEach(obj => obj.draw(graphics));
+      // this.tilemap?.draw(graphics, this.camera.getBounds());
+      // this.particleSystem.draw(graphics);
+      // this.gameObjects.forEach(obj => obj.draw(graphics));
+
+      this.renderer.draw(graphics);
+
+      // Debug drawing
       this.physics.drawDebug(graphics);
       
       // graphics.resetSurface();
@@ -80,6 +95,20 @@ export class Scene{
 
       // // Scaled to fit
       // graphics.drawSurface(this.surface, 0, 0, this.uiCamera.width / this.surface.width,  this.uiCamera.height / this.surface.height);
+   }
+
+   setTilemap(map: TileMap){
+      if(this.initialized && this.tilemap !== undefined) {
+         this.tilemap.destroy();
+      }
+      this.tilemap = map;
+      
+      this.tilemap.scene = this;
+      this.physics.layers = map.colliders;
+      
+      if(!this.initialized) return;
+
+      this.tilemap.init(this.game);
    }
 
    updateSize(){

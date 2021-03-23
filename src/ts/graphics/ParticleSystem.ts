@@ -1,6 +1,9 @@
+import { Game } from "engine/Game";
 import { Vector2 } from "math/Vector2";
+import { Scene } from "scene/Scene";
 import { Animation } from "./Animation";
 import { Graphics } from "./Graphics";
+import { Renderable } from "./Renderable";
 
 class Particle{
    position: Vector2 = new Vector2();
@@ -9,9 +12,12 @@ class Particle{
    animation: Animation|undefined;
 }
 
-export class ParticleSystem{
+export class ParticleSystem implements Renderable{
    particles: Particle[];
    index: number;
+   
+   scene!: Scene;
+   depth: number = 0;
 
    constructor(){
       this.particles = new Array(10);
@@ -21,6 +27,14 @@ export class ParticleSystem{
       }
 
       this.index = 0;
+   }
+   
+   init(game: Game){
+      this.scene.renderer.add(this);
+   }
+
+   destroy(){
+      this.scene.renderer.remove(this);
    }
 
    update(delta: number){

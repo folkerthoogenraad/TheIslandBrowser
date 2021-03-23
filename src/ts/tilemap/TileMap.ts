@@ -1,26 +1,38 @@
+import { Game } from "engine/Game";
 import { Animation } from "graphics/Animation";
 import { Graphics } from "graphics/Graphics";
+import { Renderable } from "graphics/Renderable";
 import { ResourceManager } from "graphics/ResourceManager";
 import { Sprite, SpriteSheet } from "graphics/Sprite";
 import { AABB } from "math/AABB";
 import { TileCollider } from "math/collision/TileCollider";
+import { Scene } from "scene/Scene";
 import { Color } from "util/Color";
 import { asyncLoadImage } from "util/Temp";
 import { getSpriteFromTileset, TiledMap, TiledObject, TiledObjectLayer, TiledObjectLayerType, TiledTileLayer, TiledTileLayerType, TiledColliderLayerName, TiledImageLayer, TiledTileset, TiledImageLayerType } from "./TiledMap";
 
 type TilemapObjectLoader = (object: TiledObject) => void;
 
-export class TilemapLayer{
+export class TilemapLayer implements Renderable{
    tilemap: TileMap;
+   depth: number = 0;
 
    constructor(tilemap: TileMap){
       this.tilemap = tilemap;
+   }
+
+   init(game: Game){
+      this.tilemap.scene.renderer.add(this);
+   }
+
+   destroy(){
+      this.tilemap.scene.renderer.remove(this);
    }
    
    update(delta: number, bounds: AABB){
 
    }
-   draw(graphics: Graphics, bounds: AABB){
+   draw(graphics: Graphics){
    }
 }
 
@@ -70,7 +82,9 @@ export class TilemapTileLayer extends TilemapLayer{
       }
    }
    
-   draw(graphics: Graphics, bounds: AABB){
+   draw(graphics: Graphics){
+      let bounds = this.tilemap.scene.camera.getBounds();
+
       let tileWidth = this.tilemap.tileWidth;
       let tileHeight = this.tilemap.tileHeight;
 
@@ -100,8 +114,10 @@ export class TilemapImageLayer extends TilemapLayer {
    }
 
    
-   draw(graphics: Graphics, bounds: AABB){
+   draw(graphics: Graphics){
       if(this.image === undefined) return;
+
+      let bounds = this.tilemap.scene.camera.getBounds();
 
       graphics.drawSpriteSimple(this.image, bounds.centerX - this.image.width / 2, bounds.centerY - this.image.height / 2)
    }
@@ -204,11 +220,15 @@ export class TileMap {
    height: number;
    tileWidth: number;
    tileHeight: number;
+   scene!: Scene;
+   initalized: boolean;
 
    backgroundColor: Color = new Color(1, 1, 1, 1);
 
    layers: TilemapLayer[];
    colliders: TilemapCollisionLayer[];
+
+   depth: number = -10000;
 
    constructor(width: number, height: number, tileWidth: number, tileHeight: number){
       this.width = width;
@@ -217,20 +237,34 @@ export class TileMap {
       this.tileHeight = tileHeight;
       this.layers = [];
       this.colliders = [];
+      this.initalized = false;
    }
 
-   draw(graphics: Graphics, bounds: AABB){
+   init(game: Game){
+      if(this.initalized) return;
+
+      this.layers.forEach(layer => layer.init(game));
+      this.scene.renderer.add(this);
+   }
+
+   destroy(){
+      if(!this.initalized) return;
+      
+      this.layers.forEach(layer => layer.destroy());
+      this.scene.renderer.remove(this);
+   }
+
+   draw(graphics: Graphics){
       graphics.setColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
       graphics.drawRectangle(0, 0, this.width * this.tileWidth, this.height * this.tileHeight, true);
 
       graphics.setColor(1, 1, 1, 1);
-      
-      this.layers.forEach(layer => layer.draw(graphics, bounds));
-      // this.colliders.forEach(layer => layer.drawDebug(graphics, this.tileWidth, this.tileHeight, bounds));
    }
 
    // TODO maybe more like batch update every x frames or devide up the work somehow over muptiple frames
-   update(delta: number, bounds: AABB){      
+   update(delta: number){
+      let bounds = this.scene.camera.getBounds();
+
       this.layers.forEach(layer => layer.update(delta, bounds));
    }
 
@@ -278,6 +312,13 @@ export class TileMap {
             }
 
             let tilemapLayer = new TilemapTileLayer(tilemap, tileLayer.width, tileLayer.height);
+
+            // Load properties
+            if(layer.properties !== undefined){
+               layer.properties.forEach(prop => {
+                  if(prop.name === "depth") tilemapLayer.depth = prop.value as number;
+               });
+            }
 
             for(let i = 0; i < tileLayer.data.length; i++){
                let tileIndex = tileLayer.data[i];

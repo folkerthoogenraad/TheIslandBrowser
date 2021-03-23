@@ -11,9 +11,9 @@ import { BoxCollider } from "math/collision/BoxCollider";
 import { Vector2 } from "math/Vector2";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
-import { GameObject } from "scene/GameObject";
+import { DrawableGameObject } from "scene/DrawableGameObject";
 
-export class PlayerGameObject extends GameObject{
+export class PlayerGameObject extends DrawableGameObject{
    currentAnimation!: Animation;
 
    idleAnimation!: Animation;
@@ -49,6 +49,8 @@ export class PlayerGameObject extends GameObject{
    groundLeaveTime: number = 0;
 
    groundAcceleration: number = 0.2 * 60 * 60;
+   airAcceleration: number = 0.2 * 60 * 60;
+
    gravity: number = 0.25 * 60 * 60;
    gravityUpFraction: number = 0.5;
    gravityWallFraction: number = 0.4;
@@ -325,10 +327,12 @@ export class PlayerGameObject extends GameObject{
 
       if(!this.canMove) return;
 
+      let acc = this.grounded ? this.groundAcceleration : this.airAcceleration;
+
       if(this.input.direction !== 0){
          let dir = Math.sign(this.input.direction);
          let maxSpeed = this.moveSpeed * Math.abs(this.input.direction);
-         let acceleration = this.groundAcceleration * delta;
+         let acceleration = acc * delta;
 
          this.accelerate(
             dir, 
@@ -336,7 +340,7 @@ export class PlayerGameObject extends GameObject{
             acceleration);
       }
       else{
-         this.stop(this.groundAcceleration * delta);
+         this.stop(acc * delta);
       }
    }
 

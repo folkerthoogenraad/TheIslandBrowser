@@ -7,9 +7,10 @@ import { AABB } from "math/AABB";
 import { BoxCollider } from "math/collision/BoxCollider";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
+import { DrawableGameObject } from "scene/DrawableGameObject";
 import { GameObject } from "scene/GameObject";
 
-export class PlayerFinishGameObject extends GameObject{
+export class PlayerFinishGameObject extends DrawableGameObject{
    transform: Transform;
    body: Rigidbody;
    interactable: InteractableComponent;

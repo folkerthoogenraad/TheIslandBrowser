@@ -2,9 +2,10 @@ import { Game } from "engine/Game";
 import { Vector2 } from "math/Vector2";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
+import { DrawableGameObject } from "scene/DrawableGameObject";
 import { GameObject } from "scene/GameObject";
 
-export class ResetableGameObject extends GameObject {
+export class ResetableGameObject extends DrawableGameObject {
    private _transform?: Transform;
    private _body?: Rigidbody;
    private _startPos?: Vector2;

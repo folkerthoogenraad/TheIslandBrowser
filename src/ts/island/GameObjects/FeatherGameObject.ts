@@ -9,11 +9,12 @@ import { BoxCollider } from "math/collision/BoxCollider";
 import { Vector2 } from "math/Vector2";
 import { Rigidbody } from "scene/components/Rigidbody";
 import { Transform } from "scene/components/Transform";
+import { DrawableGameObject } from "scene/DrawableGameObject";
 import { GameObject } from "scene/GameObject";
 import { PlayerGameObject } from "./PlayerGameObject";
 
 // TODO player pickup gameobject or something
-export class FeatherGameObject extends GameObject{
+export class FeatherGameObject extends DrawableGameObject{
    transform: Transform;
    body: Rigidbody;
 

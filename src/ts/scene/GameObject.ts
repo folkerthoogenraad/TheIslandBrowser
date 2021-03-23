@@ -1,5 +1,6 @@
 import { Game } from "engine/Game";
 import { Graphics } from "graphics/Graphics";
+import { Renderable } from "graphics/Renderable";
 import { Component } from "./Component";
 import { Scene } from "./Scene";
 

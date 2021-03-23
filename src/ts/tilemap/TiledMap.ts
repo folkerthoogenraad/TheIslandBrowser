@@ -29,6 +29,7 @@ export interface TiledLayer {
    type: string;
 
    visible: boolean;
+   properties: TiledProperties[];
 }
 export interface TiledTileLayer extends TiledLayer {
    width: number;
@@ -52,7 +53,7 @@ export interface TiledObject {
 
    polyline: TiledPosition[];
 
-   properties: TiledObjectProperties[];
+   properties: TiledProperties[];
 
    visible: boolean;
 }
@@ -62,7 +63,7 @@ export interface TiledPosition{
    y: number;
 }
 
-export interface TiledObjectProperties{
+export interface TiledProperties{
    name: string;
    type: string;
    value: string|boolean|number;
