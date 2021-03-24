@@ -57,6 +57,7 @@ export class PlayerGameObject extends DrawableGameObject{
    gravityWallFraction: number = 0.4;
 
    maxFallSpeed = 5 * 60;
+   maxFallSpeedWall = 1.5 * 60;
 
    grounded: boolean = false;
    wallLeft: boolean = false;
@@ -281,9 +282,6 @@ export class PlayerGameObject extends DrawableGameObject{
       // Gravity
       this.updateGravity(delta);
 
-      if(this.body.velocity.y > this.maxFallSpeed){
-         this.body.velocity.y = this.maxFallSpeed;
-      }
       
       // Animation
       this.updateAnimation(delta);
@@ -351,16 +349,30 @@ export class PlayerGameObject extends DrawableGameObject{
    }
 
    updateDash(delta: number){
-      if(this.grounded){
+      if(this.grounded || this.hasWall){
          this.canDash = true;
       }
 
       if(this.dashing){
          this.dashTimer -= delta;
+
+         if(this.dashLong && this.jumpHop){
+            this.yVelocity = this.jumpSpeed;
+            this.jumping = true;
+            this.dashing = false;
+            this.jumpHop = false;
+            this.dashLong = false;
+            this.body.velocity.x = this.dashSavedSpeed;
+            this.accelerate(this.facing, this.dashSavedMaxSpeed, this.dashSavedAddition);
+         }
          
          if(this.dashTimer < 0 && (!this.dashLong || this.grounded || this.wallLeft || this.wallRight)){
             this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.dashLong ? this.effectLongDash : this.effectDash, this.facing);
             
+            if(!this.jumping){
+               this.body.velocity.x = this.dashSavedSpeed;
+            }
+
             if(this.dashLong){
                // this.jumping = false;
                // if(this.wallLeft){
@@ -372,6 +384,7 @@ export class PlayerGameObject extends DrawableGameObject{
                //    this.yVelocity = this.jumpSpeed / 2;
                // }
             }
+
 
             this.dashing = false;
             this.dashLong = false;
@@ -389,6 +402,8 @@ export class PlayerGameObject extends DrawableGameObject{
          this.dashSavedSpeed = this.body.velocity.x;
          this.dashTimer = this.dashTime;
          this.dashTimeout = 0.2;
+
+         this.jumping = false;
 
          this.body.velocity.y = 0;
          this.body.velocity.x = this.facing * this.dashSpeed;
@@ -457,9 +472,6 @@ export class PlayerGameObject extends DrawableGameObject{
             this.jumping = true;
             this.jumpHop = false;
 
-            // You can dash after your walljump :)
-            this.canDash = true;
-            
             this.scene.particleSystem.addParticle(this.transform.position.x - 5, this.transform.position.y, this.effectWalljump, 1);
          }
          if(this.wallRight && this.jumpHop){
@@ -470,9 +482,6 @@ export class PlayerGameObject extends DrawableGameObject{
 
             this.jumping = true;
             this.jumpHop = false;
-
-            // You can dash after your walljump :)
-            this.canDash = true;
             
             this.scene.particleSystem.addParticle(this.transform.position.x + 5, this.transform.position.y, this.effectWalljump, -1);
          }
@@ -526,6 +535,13 @@ export class PlayerGameObject extends DrawableGameObject{
          }else{
             this.body.velocity.y += this.gravity * delta;
          }
+      }
+
+      if(this.body.velocity.y > this.maxFallSpeed && !this.hasWall){
+         this.body.velocity.y = this.maxFallSpeed;
+      }
+      if(this.yVelocity > this.maxFallSpeedWall && this.hasWall){
+         this.yVelocity = this.maxFallSpeedWall;
       }
    }
 

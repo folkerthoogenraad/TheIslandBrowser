@@ -18,6 +18,7 @@ import { Path } from "math/Path";
 import { Vector2 } from "math/Vector2";
 import { JumpPlatformGameObject } from "island/GameObjects/JumpPlatformGameObject";
 import { LongDashGameObject } from "island/GameObjects/LongDashGameObject";
+import { LightmapManager } from "island/GameObjects/LightmapManager";
 
 // Fuck this but whatever
 function initModal(element: HTMLElement){
@@ -54,8 +55,10 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       let scene = new Scene();
    
       let pathManager = new PathManager();
+      // let lightmap = new LightmapManager();
    
       scene.addGameObject(pathManager);
+      // scene.addGameObject(lightmap);
 
       let tilemap = await TileMap.fromTiledMapDownload(level, game.resources, (obj) => {
          if(obj.type === "Collider" || obj.type === "PlatformCollider"){

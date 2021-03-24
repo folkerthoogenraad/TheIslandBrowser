@@ -71,6 +71,7 @@ export class GLGraphics extends Graphics{
    }
 
    clear(){
+      this.flush();
       this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
    }
 
