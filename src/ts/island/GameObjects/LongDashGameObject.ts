@@ -75,15 +75,16 @@ export class LongDashGameObject extends DrawableGameObject{
    }
 
    onCollision(other: Rigidbody){
-      if(!this.isUsed && other.gameObject instanceof PlayerGameObject){
+      if(other.gameObject instanceof PlayerGameObject){
          if(other.gameObject.dashing){
             other.gameObject.dashLong = true;
+         }
+         if(!this.isUsed){
+            this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.effect);
          }
 
          this.isUsed = true;
          this.usedTime = 1;
-
-         this.scene.particleSystem.addParticle(this.transform.position.x, this.transform.position.y, this.effect);
       }
    } 
 

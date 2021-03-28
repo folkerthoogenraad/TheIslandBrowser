@@ -2,7 +2,19 @@ import { Surface } from "graphics/Surface";
 import { Texture } from "graphics/Texture";
 import { GLTexture } from "./GLTexture";
 
-export class GLSurface extends Surface{
+export abstract class GLSurface extends Surface{
+
+   abstract bind(): void;
+   abstract unbind(): void;
+
+   resize(width: number, height: number){
+      
+   }
+
+   abstract destroy(): void;
+}
+
+export class GLFrameBufferSurface extends GLSurface{
    gl: WebGLRenderingContext;
 
    texture: GLTexture;
@@ -37,5 +49,34 @@ export class GLSurface extends Surface{
    destroy(){
       this.gl.deleteBuffer(this.id);
       this.texture.destroy();
+   }
+}
+export class GLWindowSurface extends GLSurface{
+   gl: WebGLRenderingContext;
+
+   get width(){ return this.gl.canvas.width; }
+   get height(){ return this.gl.canvas.height; }
+
+   constructor(gl: WebGLRenderingContext){
+      super();
+
+      this.gl = gl;
+
+      this.texture = undefined;
+   }
+
+   bind(){
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+   }
+   unbind(){
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+   }
+
+   resize(width: number, height: number){
+      this.gl.canvas.width = width;
+      this.gl.canvas.height = height;
+   }
+
+   destroy(){
    }
 }

@@ -1,5 +1,7 @@
 import { AABB } from "math/AABB";
+import { BlendMode } from "./BlendMode";
 import { Camera } from "./Camera";
+import { Effect } from "./Effect";
 import { NineSideSprite } from "./NineSideSprite";
 import { Sprite } from "./Sprite";
 import { Surface } from "./Surface";
@@ -20,6 +22,7 @@ export abstract class Graphics{
    public abstract drawTexture(texture: Texture, x: number, y: number, scaleX: number, scaleY: number): void;
 
    public drawSurface(surface: Surface, x: number, y: number, scaleX: number, scaleY: number){
+      if(surface.texture === undefined){ throw new Error("Can't draw empty surface"); }
       this.drawTexture(surface.texture, x, y, scaleX, scaleY);
    }
 
@@ -91,9 +94,15 @@ export abstract class Graphics{
       this.drawSpriteTiled(buffer, x + xMiddle, y + yMiddle, xSize, ySize);
    }
 
-   public abstract resetSurface(): void;
-   public abstract setSurface(surface: Surface): void;
-   public abstract setCamera(camera: Camera): void;
+   public abstract push(): void;
+   public abstract pop(): void;
+   
+   public abstract setSurface(surface?: Surface): void;
+   
+   public setCamera(camera: Camera){
+      this.setView(camera.center.x - camera.width / 2, camera.center.y - camera.height / 2, camera.width, camera.height);
+   }
+   public abstract setView(x: number, y: number, w: number, h: number): void;
    public setColor(r: number, g: number, b: number, a: number = 1){
       this.setColorRaw(r, g, b, a);
    }
@@ -102,4 +111,17 @@ export abstract class Graphics{
    public abstract setColorRaw(r: number, g: number, b: number, a: number): void;
 
    public abstract updateSize(): void;
+
+   public abstract setBlendMode(blendMode: BlendMode): void;
+   
+   abstract get viewWidth(): number;
+   abstract get viewHeight(): number;
+
+   abstract setSecondaryTexture(texture?: Texture): void;
+
+   abstract setEffect(effect?: Effect): void;
+
+   resetEffect(){
+      this.setEffect(undefined);
+   }
 }

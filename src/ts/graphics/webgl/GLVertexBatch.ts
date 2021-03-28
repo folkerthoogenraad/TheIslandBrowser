@@ -78,7 +78,10 @@ export class GLVertexBatch{
    }
 
    flush(){
-      if(this.index === 0) return;
+      if(this.index === 0){
+         this.length = this.index;
+         return;
+      }
       
       // This is nice to optimize with webgl2 to get buffersubdata with offsets and whatnot
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);

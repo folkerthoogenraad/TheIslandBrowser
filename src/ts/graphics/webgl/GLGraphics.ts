@@ -1,20 +1,31 @@
+import { BlendMode } from "graphics/BlendMode";
 import { Camera } from "graphics/Camera";
+import { Effect } from "graphics/Effect";
 import { Graphics } from "graphics/Graphics";
 import { Sprite } from "graphics/Sprite";
 import { Surface } from "graphics/Surface";
 import { Texture } from "graphics/Texture";
 import { Color } from "util/Color";
 import { DefaultFragmentSource, DefaultVertexSource, GLShaderProgram, GLShaderAttributeSet } from "./GLShader";
-import { GLSurface } from "./GLSurface";
+import { GLSurface, GLWindowSurface } from "./GLSurface";
 import { GLTexture } from "./GLTexture";
 import { GLVertexBatch } from "./GLVertexBatch";
+
+// TODO add to this frame if needed :)
+interface GLGraphicsStackItem{
+   surface: GLSurface|undefined;
+   projectionMatrix: Float32Array;
+}
 
 export class GLGraphics extends Graphics{
    gl: WebGLRenderingContext;
 
    pixelTexture: GLTexture;
-   currentTexture: GLTexture;
 
+   currentTexture0: GLTexture;
+   currentTexture1?: GLTexture;
+
+   stack: GLGraphicsStackItem[];
    currentSurface?: GLSurface;
 
    batch: GLVertexBatch;
@@ -25,8 +36,7 @@ export class GLGraphics extends Graphics{
    drawing: boolean = false;
    color: Color;
 
-   camera?: Camera;
-
+   defaultShader: GLShaderProgram;
    shader: GLShaderProgram;
    attributes: GLShaderAttributeSet;
 
@@ -45,7 +55,7 @@ export class GLGraphics extends Graphics{
 
       this.pixelTexture = new GLTexture(gl);
       this.pixelTexture.setData(1, 1, GLTexture.colorData(1, 1));
-      this.currentTexture = this.pixelTexture;
+      this.currentTexture0 = this.pixelTexture;
 
       this.projectionMatrix = new Float32Array([
          1, 0, 0, 0,
@@ -62,10 +72,13 @@ export class GLGraphics extends Graphics{
 
       this.batch = new GLVertexBatch(this.gl);
 
-      this.shader = new GLShaderProgram(gl, DefaultVertexSource, DefaultFragmentSource);
+      this.defaultShader = new GLShaderProgram(gl, DefaultVertexSource, DefaultFragmentSource);
+      this.shader = this.defaultShader;
 
       this.attributes = new GLShaderAttributeSet();
       this.attributes.load(this.shader);
+
+      this.stack = [];
 
       this.updateSize();
    }
@@ -199,13 +212,30 @@ export class GLGraphics extends Graphics{
       this.color.a = a;
    }
 
-   private setTexture(texture: GLTexture){
-      if(this.currentTexture !== texture) this.flush();
+   setSecondaryTexture(texture?: Texture){
+      if(this.currentTexture1 !== texture) this.flush();
+   
+      this.currentTexture1 = texture as GLTexture|undefined;  
+   }
 
-      this.currentTexture = texture;
+   private setTexture(texture: GLTexture){
+      if(this.currentTexture0 !== texture) this.flush();
+   
+      this.currentTexture0 = texture;
    }
    private ensureSize(n: number){
       if(this.batch.left < n) this.flush();
+   }
+
+   setEffect(effect?: Effect){
+      if(effect === undefined){
+         effect = this.defaultShader;
+      }
+
+      if(this.shader !== effect) this.flush();
+
+      this.shader = effect as GLShaderProgram;
+      this.attributes.load(this.shader);
    }
 
    begin(){
@@ -230,8 +260,6 @@ export class GLGraphics extends Graphics{
       
       let gl = this.gl;
 
-      this.setCameraMatrix(this.currentSurface === undefined);
-
       gl.vertexAttribPointer(this.attributes.positionAttribute, 3, gl.FLOAT, false, GLVertexBatch.StrideInBytes, GLVertexBatch.PositionOffsetInBytes);
       gl.vertexAttribPointer(this.attributes.colorAttribute, 4, gl.FLOAT, false, GLVertexBatch.StrideInBytes, GLVertexBatch.ColorOffsetInBytes);
       gl.vertexAttribPointer(this.attributes.uvAttribute, 2, gl.FLOAT, false, GLVertexBatch.StrideInBytes, GLVertexBatch.UVOffsetInBytes);
@@ -249,42 +277,34 @@ export class GLGraphics extends Graphics{
       
       this.shader.setUniformPosition(this.attributes.screenSizeUniform, this.viewWidth, this.viewHeight);
 
-      this.shader.setUniformTexture(this.attributes.textureUniform, this.currentTexture);
+      this.shader.setUniformTexture(this.attributes.texture0Uniform, this.currentTexture0);
+
+      // Set secondary texture :)
+      if(this.currentTexture1){
+         this.shader.setUniformTexture(this.attributes.texture1Uniform, this.currentTexture1, 1);
+      }
 
       gl.drawArrays(gl.TRIANGLES, 0, this.batch.length);
    }
 
-   setCamera(camera: Camera){
-      if(this.camera !== camera){
-         this.flush();
-      }
+   setView(x: number, y: number, w: number, h: number){
+      this.flush();
 
-      this.camera = camera;
-   }
+      let floorX = this.viewWidth / w;
+      let floorY = this.viewHeight / h;
 
-   setCameraMatrix(flip: boolean = false){
-      if(this.camera === undefined) return;
+      let scaleX = 2 / w;
+      let scaleY = 2 / h;
 
-      let cameraWidth = this.camera.width;
-      let cameraHeight = this.camera.height;
+      let centerX = x + w / 2;
+      let centerY = y + h / 2;
 
-      if(!this.camera.preserveAspectRatio){
-         let asp = this.viewWidth / this.viewHeight;
-
-         cameraWidth = cameraHeight * asp;
-      }
-
-      let floorX = this.viewWidth / cameraWidth;
-      let floorY = this.viewHeight / cameraHeight;
-
-      let scaleX = 2 / cameraWidth;
-      let scaleY = 2 / cameraHeight;
-
-      if(flip) scaleY = -scaleY;
+      // Flip if we are drawing to the window
+      if(this.currentSurface === undefined) scaleY = -scaleY;
 
       // Snapping to whole pixels
-      let offsetX = -Math.floor(this.camera.center.x * floorX) / floorX  * scaleX;
-      let offsetY = -Math.floor(this.camera.center.y * floorY) / floorY * scaleY;
+      let offsetX = -Math.floor(centerX * floorX) / floorX  * scaleX;
+      let offsetY = -Math.floor(centerY * floorY) / floorY * scaleY;
 
       this.projectionMatrix = new Float32Array([
          scaleX, 0, 0, 0,
@@ -292,23 +312,41 @@ export class GLGraphics extends Graphics{
          0, 0, 1, 0,
          offsetX, offsetY, 0, 1
       ]);
+
+   }
+
+   push(){
+      this.stack.push({
+         surface: this.currentSurface,
+         projectionMatrix: new Float32Array(this.projectionMatrix),
+      });
+   }
+   pop(){
+      if(this.stack.length <= 0) return;
+      
+      let frame = this.stack.pop()!;
+
+      this.setSurface(frame.surface);
+      this.projectionMatrix.set(frame.projectionMatrix);
    }
    
-   resetSurface(){
-      if(this.currentSurface !== undefined) this.flush();
-      this.currentSurface = undefined;
-
-      this.gl.bindTexture(this.gl.TEXTURE_2D, null);
-      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-
-      this.updateViewport();
-   }
-   setSurface(surface: Surface){
+   setSurface(surface?: Surface){
+      if(this.currentSurface === surface) return;
       if(this.currentSurface !== surface) this.flush();
+
       this.currentSurface = surface as GLSurface;
       
       this.gl.bindTexture(this.gl.TEXTURE_2D, null);
-      this.currentSurface.bind();
+
+      if(this.currentSurface !== undefined){
+         // Don't use the default view :)
+         // this.setView(0, 0, this.currentSurface.width, this.currentSurface.height);
+         this.currentSurface.bind();
+      }
+      else{
+         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+      }
+      
 
       this.updateViewport();
    }
@@ -339,5 +377,22 @@ export class GLGraphics extends Graphics{
    
    public setAlpha(a: number){
       this.color.a = a;
+   }
+
+   setBlendMode(blendMode: BlendMode){
+      this.flush();
+
+      switch(blendMode){
+         case BlendMode.Normal:
+            this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+            break;
+         case BlendMode.Add:
+            this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+            break;
+         case BlendMode.Multiply:
+            this.gl.blendFunc(this.gl.DST_COLOR, this.gl.ONE_MINUS_SRC_ALPHA)
+            // this.gl.blendFunc(this.gl.ZERO, this.gl.SRC_COLOR);
+            break;
+      }
    }
 }

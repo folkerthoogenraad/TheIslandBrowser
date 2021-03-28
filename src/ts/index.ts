@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       game.scene.init(game);
    }
 
-   setLevel("assets/levels/level7.json");
+   setLevel("assets/levels/level4.json");
 
    (window as any).setLevel = setLevel;
 });
