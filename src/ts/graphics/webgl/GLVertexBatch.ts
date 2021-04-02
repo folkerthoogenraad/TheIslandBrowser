@@ -37,7 +37,8 @@ export class GLVertexBatch{
    constructor(gl: WebGLRenderingContext){
       this.gl = gl;
       
-      this.data = new Float32Array(3 * 1024);
+      this.data = new Float32Array(3 * 1048);
+      // this.data = new Float32Array(3 * 128);
       this.index = 0;
 
       this.buffer = gl.createBuffer()!;

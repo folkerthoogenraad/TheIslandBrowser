@@ -70,10 +70,10 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       let scene = new Scene();
    
       let pathManager = new PathManager();
-      // let lightmap = new LightmapManager();
+      let lightmap = new LightmapManager();
    
       scene.addGameObject(pathManager);
-      // scene.addGameObject(lightmap);
+      scene.addGameObject(lightmap);
 
       let tilemap = await TileMap.fromTiledMapDownload(level, game.resources, (obj) => {
          if(obj.type === "Collider" || obj.type === "PlatformCollider"){
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       game.scene.init(game);
    }
 
-   setLevel("assets/levels/level4.json");
+   setLevel("assets/levels/level7.json");
 
    (window as any).setLevel = setLevel;
 });

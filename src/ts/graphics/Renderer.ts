@@ -41,6 +41,7 @@ export class Renderer{
       graphics.setCamera(camera);
 
       this.renderables.forEach(r => r.draw(graphics));
+      
       graphics.pop();
 
       let current = this.surface;

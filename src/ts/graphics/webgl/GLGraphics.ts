@@ -40,8 +40,23 @@ export class GLGraphics extends Graphics{
    shader: GLShaderProgram;
    attributes: GLShaderAttributeSet;
 
+   flushCount: number = 0;
+
    constructor(gl: WebGLRenderingContext){
       super();
+
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if(debugInfo !== null){
+         const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+         const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+   
+         console.log(vendor);
+         console.log(renderer);
+      }
+      else{
+         console.log("no vendor info");
+      }
+
 
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -241,6 +256,8 @@ export class GLGraphics extends Graphics{
    begin(){
       if(this.drawing) return;
       this.drawing = true;
+
+      this.flushCount = 0;
    }
 
    end(){
@@ -249,6 +266,8 @@ export class GLGraphics extends Graphics{
 
       this.flush();
       this.drawing = false;
+
+      // console.log("flush: " + this.flushCount);
    }
 
    flush(){
@@ -257,6 +276,8 @@ export class GLGraphics extends Graphics{
       this.batch.flush();
       
       if(this.batch.length === 0) return;
+
+      this.flushCount++;
       
       let gl = this.gl;
 

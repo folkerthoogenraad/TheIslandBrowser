@@ -73,7 +73,7 @@ void main() {
    // Discard alpha
    if(color0.a < 0.01) discard;
 
-   gl_FragColor = mix(gray(color0) * 0.2, color0, color1);
+   gl_FragColor = mix(gray(color0) * 0.4, color0, color1);
 }
 `;
 

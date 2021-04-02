@@ -32,7 +32,15 @@ export class Game{
       // this.graphics = new Canvas2DGraphics(canvas);
       // this.resources = new Canvas2DResourceManager();
 
-      let gl = canvas.getContext("webgl")!;
+      let attributes: WebGLContextAttributes = {
+         alpha: true,
+         antialias: false,
+         desynchronized: true,
+         powerPreference: "high-performance",
+      };
+      (attributes as any).xrCompatible = true;
+
+      let gl = canvas.getContext("webgl", attributes)!;
 
       this.graphics = new GLGraphics(gl);
       this.resources = new GLResourceManager(gl);
