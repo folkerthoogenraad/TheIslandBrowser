@@ -7,6 +7,9 @@ export class Camera{
    // TODO this shouldn't be defined like this, because this depends on the screen aspect ratio...
    width: number = 640;
    height: number = 360;
+   
+   get x(){ return this.center.x - this.width / 2; }
+   get y(){ return this.center.y - this.height / 2; }
 
    preserveAspectRatio: boolean = false;
 

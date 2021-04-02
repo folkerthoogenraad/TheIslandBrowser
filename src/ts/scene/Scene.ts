@@ -17,7 +17,7 @@ export class Scene{
    game!: Game;
    tilemap?: TileMap;
 
-   renderer: Renderer;
+   renderer!: Renderer;
    physics: Physics;
    particleSystem: ParticleSystem;
 
@@ -35,7 +35,6 @@ export class Scene{
       this.gameObjects = [];
       this.physics = new Physics();
 
-      this.renderer = new Renderer();
 
       this.particleSystem = new ParticleSystem();
       this.particleSystem.scene = this;
@@ -46,6 +45,8 @@ export class Scene{
       this.initialized = true;
 
       this.game = game;
+
+      this.renderer = new Renderer(this.game.resources);
 
       this.tilemap?.init(game);
       this.particleSystem.init(game);
@@ -79,13 +80,13 @@ export class Scene{
 
    draw(graphics: Graphics){
       // graphics.setSurface(this.surface);
-      graphics.setCamera(this.camera);
+      // graphics.setCamera(this.camera);
 
       // this.tilemap?.draw(graphics, this.camera.getBounds());
       // this.particleSystem.draw(graphics);
       // this.gameObjects.forEach(obj => obj.draw(graphics));
 
-      this.renderer.draw(graphics);
+      this.renderer.draw(graphics, this.camera);
 
       // Debug drawing
       this.physics.drawDebug(graphics);
@@ -112,7 +113,7 @@ export class Scene{
    }
 
    updateSize(){
-      this.surface.resize(this.game.canvas.width, this.game.canvas.height);
+      this.renderer.updateSize(this.game.canvas.width, this.game.canvas.height);
    }
 
    addGameObject(obj: GameObject){

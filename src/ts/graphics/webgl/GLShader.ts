@@ -1,3 +1,4 @@
+import { Effect } from "graphics/Effect";
 import { Vector2 } from "math/Vector2";
 import { GLTexture } from "./GLTexture";
 
@@ -42,7 +43,7 @@ varying highp vec4 v_Position;
 varying highp vec4 v_Color;
 varying highp vec2 v_UV;
 
-uniform sampler2D u_Texture;
+uniform sampler2D u_Texture0;
 
 highp vec4 vga(highp vec4 color){
    // Low color precision :)
@@ -68,7 +69,7 @@ highp vec4 gray(highp vec4 color){
 }
 
 void main() {
-   highp vec4 color = texture2D(u_Texture, v_UV) * v_Color;
+   highp vec4 color = texture2D(u_Texture0, v_UV) * v_Color;
 
    // Discard alpha
    if(color.a < 0.01) discard;
@@ -86,8 +87,10 @@ export class GLShaderAttributeSet{
 
    modelViewUniform: WebGLUniformLocation|null = null;
    projectionUniform: WebGLUniformLocation|null = null;
-   textureUniform: WebGLUniformLocation|null = null;
    screenSizeUniform: WebGLUniformLocation|null = null;
+
+   texture0Uniform: WebGLUniformLocation|null = null;
+   texture1Uniform: WebGLUniformLocation|null = null;
 
    load(program: GLShaderProgram){
       this.positionAttribute = program.getAttributeLocation("position");
@@ -96,7 +99,8 @@ export class GLShaderAttributeSet{
 
       this.modelViewUniform = program.getUniformLocation("u_MatrixModelView");
       this.projectionUniform = program.getUniformLocation("u_MatrixProjection");
-      this.textureUniform = program.getUniformLocation("u_Texture");
+      this.texture0Uniform = program.getUniformLocation("u_Texture0");
+      this.texture1Uniform = program.getUniformLocation("u_Texture1");
       this.screenSizeUniform = program.getUniformLocation("u_ScreenSize");
    }
 }
@@ -133,13 +137,14 @@ class GLShader {
    }
 }
 
-export class GLShaderProgram {
+export class GLShaderProgram extends Effect{
    shaders: GLShader[];
    gl: WebGLRenderingContext;
    id: WebGLProgram;
    compiled: boolean;
 
    constructor(gl: WebGLRenderingContext, vertexSource: string, fragmentSource: string) {
+      super();
       this.shaders = [];
       this.gl = gl;
       this.compiled = true;
@@ -186,12 +191,13 @@ export class GLShaderProgram {
       if(uniform === null) return;
       this.gl.uniformMatrix4fv(uniform, false, matrix);
    }
-   setUniformTexture(uniform: WebGLUniformLocation|null, texture: GLTexture){
+   setUniformTexture(uniform: WebGLUniformLocation|null, texture: GLTexture, index: number = 0){
       if(uniform === null) return;
-      this.gl.activeTexture(this.gl.TEXTURE0);
-
+      
+      this.gl.activeTexture(this.gl.TEXTURE0 + index);
       texture.bind();
-      this.gl.uniform1i(uniform, 0);
+      
+      this.gl.uniform1i(uniform, index);
    }
 
    destroy(){

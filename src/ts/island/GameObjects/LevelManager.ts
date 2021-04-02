@@ -184,6 +184,27 @@ export class LevelManager extends GameObject{
          this.bestTimeElement.innerText = format(this.bestTime);
       }
    }
+   
+   updateCameraContinues(delta: number){
+      if(!this.player) return;
+
+      const position = this.player.transform.position;
+
+      const sceneWidth = this.scene.tilemap!.pixelWidth;
+      const sceneHeight = this.scene.tilemap!.pixelHeight;
+
+      const lerpX = position.x / sceneWidth;
+      const lerpY = position.y / sceneHeight;
+
+      const cam = this.scene.camera;
+
+      let wantedPosition = new Vector2(
+         cam.width / 2 + (sceneWidth - cam.width) * lerpX,
+         cam.height / 2 + (sceneHeight- cam.height) * lerpY
+      );
+
+      cam.center.lerpTo(wantedPosition, delta * 10);
+   }
 
    updateCamera(delta: number){
       if(!this.player) return;

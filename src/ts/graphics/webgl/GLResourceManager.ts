@@ -1,6 +1,7 @@
 import { ResourceManager } from "graphics/ResourceManager";
 import { Texture } from "graphics/Texture";
-import { GLSurface } from "./GLSurface";
+import { GLShaderProgram } from "./GLShader";
+import { GLFrameBufferSurface, GLSurface } from "./GLSurface";
 import { GLTexture } from "./GLTexture";
 
 export class GLResourceManager extends ResourceManager{
@@ -25,6 +26,10 @@ export class GLResourceManager extends ResourceManager{
    }
 
    createSurface(width: number, height: number){
-      return new GLSurface(this.gl, width, height);
+      return new GLFrameBufferSurface(this.gl, width, height);
+   }
+   
+   createEffect(vertexSource: string, fragmentSource: string){
+      return new GLShaderProgram(this.gl, vertexSource, fragmentSource);
    }
 }
