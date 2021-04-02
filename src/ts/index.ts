@@ -19,6 +19,7 @@ import { Vector2 } from "math/Vector2";
 import { JumpPlatformGameObject } from "island/GameObjects/JumpPlatformGameObject";
 import { LongDashGameObject } from "island/GameObjects/LongDashGameObject";
 import { LightmapManager } from "island/GameObjects/LightmapManager";
+import { createFontTextureBlob } from "util/FontUtil";
 
 // Fuck this but whatever
 function initModal(element: HTMLElement){
@@ -38,9 +39,23 @@ function initModals(){
    modals.forEach(modal => initModal(modal as HTMLElement));
 }
 
+async function initImage(size: number){
+   let image = document.getElementById("image") as HTMLImageElement;
+   image.src = await URL.createObjectURL(await createFontTextureBlob(size));
+   image.style.width = "1024px";
+   image.style.height = "auto";
+   image.style.imageRendering = "pixelated";
+}
+
 // Init the damn game
 document.addEventListener("DOMContentLoaded", async ()=>{
    initModals();
+
+   // initImage(12);
+
+   // (window as any).redraw = initImage;
+
+   // return;
 
    let canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
